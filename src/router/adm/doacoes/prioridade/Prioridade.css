@@ -1,0 +1,86 @@
+/* Geral */
+.container-caregoria-prioridade {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 40px auto;
+    padding: 45px;
+    max-width: 900px;
+    width: 100%;
+    border-radius: 14px;
+}
+/* .uiii1{
+    border: 5px solid #1b7034 !important ;
+} */
+
+.title-prioridade {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 40px;
+    color: #135F99;
+
+}
+
+.cardHeader-prioridade {
+    color: #0e4671 !important;
+    margin: 6px 0px 0px 0px !important;
+}
+
+.counter-controls-prioridade {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.nivel-prioridade-prioridade-alta {
+    background-color: brown;
+    padding: 3px;
+    width: 70px;
+    color: #fff;
+    text-align: center;
+    font-weight: bolder;
+    border-radius: 5px;
+}
+
+.nivel-prioridade-prioridade-media {
+    background-color: #bed819;
+    padding: 3px;
+    width: 70px;
+    color: #fff;
+    text-align: center;
+    font-weight: bolder;
+    border-radius: 5px;
+}
+
+.nivel-prioridade-prioridade-baixa {
+    background-color: #1b7034;
+    padding: 3px;
+    width: 70px;
+    color: #fff;
+    text-align: center;
+    font-weight: bolder;
+    border-radius: 5px;
+}
+
+.container-button-prioridade-edit-next{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 40px auto;
+    padding: 45px;
+    max-width: 900px;
+    width: 100%;
+    border-radius: 14px;
+}
+
+.btn-edit-next{
+    background-color: #135F99 !important;
+    color: #fff !important;
+}
+/* Responsividade */
+@media (max-width: 768px) {
+    .title-prioridade {
+        font-size: 1.5rem;
+    }
+}

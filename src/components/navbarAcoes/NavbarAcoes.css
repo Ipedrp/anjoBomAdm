@@ -1,0 +1,33 @@
+.supreme-div-acoes-navbar{
+    background-color: #10324B;
+    width: 100%;
+}
+
+.container-grid-acoes-navbar {
+    background-color: #10324B !important;
+    width: 80% !important; 
+    margin: 0 auto !important;
+    padding: 10px !important; 
+ 
+    display: flex !important;
+    justify-content: center !important; 
+    align-items: center !important; 
+}
+
+.grid-column-content {
+    background-color: #10324B;
+    padding: 20px;
+    text-align: center;
+    border: 4px solid #fff;
+    color: #fff;
+    font-size: 1.2rem;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+.grid-column-content:hover {
+    background-color: #fff;
+    border: 4px solid #10324B;
+    color: #10324B;
+    cursor: pointer;
+   
+}
