@@ -5,11 +5,11 @@ import NavbarAcoes from "../../../components/navbarAcoes/NavbarAcoes";
 import axios from 'axios';
 import './CriarPontoColeta.css';
 import { Link } from 'react-router-dom';
+import Swal from 'sweetalert2'
 
 const CriarPontoColeta = () => {
 
     const [formCriarPontoColeta, setFormCriarPontoColeta] = useState({
-
         name: '',
         urlMap: '',
         address: {
@@ -22,12 +22,7 @@ const CriarPontoColeta = () => {
         }
     });
 
-    // const [dataArray, setDataArray] = useState([]);
-
-    // useEffect(() => {
-    //     console.log('dataArray foi atualizado:', dataArray);
-    //     // Aqui você pode realizar outras operações necessárias quando dataArray mudar
-    // }, [dataArray]);
+    const token = localStorage.getItem('authorization')
 
     const [erros, setErros] = useState({
         address: {
@@ -250,13 +245,19 @@ const CriarPontoColeta = () => {
         }
 
         if (valid) {
+            console.log(token)
+            console.log("dados enviado", formCriarPontoColeta);
             try {
                 // Envia os dados para o backend via POST usando Axios
-                const response = await axios.post('http://apianjobom.victordev.shop//admin/criarPontoDeColeta', formCriarPontoColeta, {
+                const response = await axios.post('https://apianjobom.victordev.shop/admin/criarPontoDeColeta', formCriarPontoColeta, {
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        Authorization: token
+
                     }
                 });
+                localStorage.setItem('authorization', response.data.token)
+                console.log(response.data.token)
 
                 // Exibe o SweetAlert para sucesso
                 Swal.fire({
@@ -273,14 +274,15 @@ const CriarPontoColeta = () => {
                 // Limpa o formulário após o envio
                 setFormCriarPontoColeta({
                     name: '',
-                    urlMap   : '',
+                    urlMap: '',
                     address: {
                         cep: '',
                         estado: '',
                         cidade: '',
                         bairro: '',
                         rua: '',
-                        numero: ''
+                        numero: '',
+    
                     },
                     data_inicio: new Date().toISOString(),
                     data_fim: new Date().toISOString(),
@@ -311,7 +313,7 @@ const CriarPontoColeta = () => {
             }
         }
 
-        
+
         // if (valid) {
 
         //     //Adiciona os dados ao array sem o campo id

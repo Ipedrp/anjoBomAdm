@@ -1,35 +1,99 @@
-import React, { useState, useEffect } from 'react';
-import { Grid, Form, Button, Input, Image, FormInput } from 'semantic-ui-react';
+import React, { useState } from 'react';
+import { Grid, Form, Button, Image, FormInput } from 'semantic-ui-react';
 import { useMediaQuery } from 'react-responsive';
 import Logo from "../../../assets/logo.png";
 import './Login.css';
-import { Link } from 'react-router-dom';
+import Swal from 'sweetalert2';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-    const [formValuesLogin, setFormValuesLogin] = useState({ 
-        email: '', 
-        senha: '' 
+    const [formValuesLogin, setFormValuesLogin] = useState({
+        email: '',
+        password: ''
     });
+    const [formErrors, setFormErrors] = useState({
+        email: false,
+        password: false
+    });
+    const [errorMessage, setErrorMessage] = useState(''); // Armazena a mensagem de erro do status 400
 
-    const [formDataArray, setFormDataArray] = useState([]);
-
+    const navigate = useNavigate();
     const isMobile = useMediaQuery({ maxWidth: 767 });
-
-    useEffect(() => {
-        console.log('dataArray foi atualizado:', formDataArray);
-        // Aqui você pode realizar outras operações necessárias quando dataArray mudar
-    }, [formDataArray]); // O array de dependências contém dataArray
 
     const handleChange = (e, { name, value }) => {
         setFormValuesLogin(prevValues => ({
             ...prevValues,
             [name]: value
         }));
+
+        // Resetar o erro ao alterar o valor
+        setFormErrors(prevErrors => ({
+            ...prevErrors,
+            [name]: false
+        }));
+
+        setErrorMessage(''); // Limpar mensagem de erro geral ao alterar os campos
     };
-   
-    
-    const Entrar = () => {
-        setFormDataArray([...formDataArray, formValuesLogin]);
+
+    const validateForm = () => {
+        const errors = {
+            email: formValuesLogin.email === '',
+            password: formValuesLogin.password === ''
+        };
+        setFormErrors(errors);
+        return !errors.email && !errors.password;
+    };
+
+    const Entrar = async () => {
+        if (!validateForm()) {
+            return;
+        }
+
+        try {
+            const response = await axios.post('https://apianjobom.victordev.shop/admin/auth', formValuesLogin, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.status === 200) {
+                localStorage.setItem('authorization', response.data.token);
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Login bem-sucedido!',
+                    text: 'Você será redirecionado.',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    navigate('/home');
+                });
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 400) {
+                // Exibir erro nos campos
+                setErrorMessage('E-mail ou senha inválidos.');
+                setFormErrors({
+                    email: true,
+                    password: true
+                });
+            } else if (error.response && error.response.status === 401) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Você realmente é um administrador da Anjo Bom?',
+                    text: 'Credenciais inválidas. Verifique seu email e senha.',
+                });
+            } else if (error.response && error.response.status === 500) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro 500',
+                    text: 'Erro interno do servidor. Tente novamente mais tarde.',
+                });
+            } else {
+                console.log(error);
+            }
+        }
     };
 
     return (
@@ -57,6 +121,7 @@ const Login = () => {
                                 name="email"
                                 value={formValuesLogin.email}
                                 onChange={handleChange}
+                                error={formErrors.email && (formValuesLogin.email === '' ? "Email é obrigatório" : errorMessage)}
                             />
                         </Form.Field>
                         <Form.Field>
@@ -65,16 +130,15 @@ const Login = () => {
                                 type="password"
                                 placeholder="Digite sua senha"
                                 icon={"lock"}
-                                name="senha"
-                                value={formValuesLogin.senha}
+                                name="password"
+                                value={formValuesLogin.password}
                                 onChange={handleChange}
+                                error={formErrors.password && (formValuesLogin.password === '' ? "Senha é obrigatória" : errorMessage)}
                             />
                         </Form.Field>
-                        <Link to="/home">
-                            <Button type="submit" className="btn-login" fluid onClick={Entrar}>
-                                Entrar
-                            </Button>
-                        </Link>
+                        <Button type="submit" className="btn-login" fluid onClick={Entrar}>
+                            Entrar
+                        </Button>
                     </Form>
                 </div>
             </Grid.Column>

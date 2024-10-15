@@ -3,30 +3,17 @@ import { Button, Table, Icon, Label, Menu, MenuItem } from 'semantic-ui-react';
 import { Link } from "react-router-dom";
 import NavbarAcoes from "../../../components/navbarAcoes/NavbarAcoes";
 import Header from "../../../components/header/Header";
+import axios from "axios";
 import { useMediaQuery } from 'react-responsive';
 
 import './ListaEvento.css';
-
-const eventos = [
-    { id: 1, titulo: "Evento A", endereco: "Rua X, 123", data: "2024-10-12" },
-    { id: 2, titulo: "Evento B", endereco: "Rua Y, 456", data: "2024-10-13" },
-    { id: 3, titulo: "Evento C", endereco: "Rua Z, 789", data: "2024-10-14" },
-    { id: 4, titulo: "Evento D", endereco: "Rua W, 101", data: "2024-10-15" },
-    { id: 5, titulo: "Evento E", endereco: "Rua V, 202", data: "2024-10-16" },
-    { id: 6, titulo: "Evento F", endereco: "Rua U, 303", data: "2024-10-17" },
-    { id: 7, titulo: "Evento G", endereco: "Rua T, 404", data: "2024-10-18" },
-    { id: 8, titulo: "Evento H", endereco: "Rua S, 505", data: "2024-10-19" },
-    { id: 9, titulo: "Evento I", endereco: "Rua R, 606", data: "2024-10-20" },
-    { id: 10, titulo: "Evento J", endereco: "Rua Q, 707", data: "2024-10-21" },
-    { id: 11, titulo: "Evento K", endereco: "Rua Q, 707", data: "2024-10-21" },
-];
 
 function ListaEvento() {
     const [paginaAtual, setPaginaAtual] = useState(1);
     const itensPorPagina = 5;
     const [allEventos, setAllEventos] = useState([]);
     const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
-
+    const token = localStorage.getItem('authorization')
 
     useEffect(() => {
         const fetchEventos = async () => {
@@ -56,20 +43,21 @@ function ListaEvento() {
                     Authorization: token
                 }
             })
-
-            console.log(response, "essa é a resposta")
+            localStorage.setItem('authorization', response.data.token)
+            console.log(response, "essa é a resposta dessa porra")
         } catch (error) {
             console.error('Erro ao deletar os pontos de coleta:', error);
 
         }
     }
 
+    console.log("todos os evcento dessa buceta", allEventos)
 
     const indexUltimoItem = paginaAtual * itensPorPagina;
     const indexPrimeiroItem = indexUltimoItem - itensPorPagina;
-    const eventosPaginaAtual = eventos.slice(indexPrimeiroItem, indexUltimoItem);
+    const eventosPaginaAtual = allEventos.slice(indexPrimeiroItem, indexUltimoItem);
 
-    const paginasTotais = Math.ceil(eventos.length / itensPorPagina);
+    const paginasTotais = Math.ceil(allEventos.length / itensPorPagina);
 
     const handlePaginaClick = (numeroPagina) => {
         setPaginaAtual(numeroPagina);
@@ -83,9 +71,9 @@ function ListaEvento() {
             <NavbarAcoes />
             <Header title2={"Evento"} />
             <div className="lista-listaEvento-container">
-                {!eventos.length ? (
+                {!allEventos.length ? (
                     <div className="array-vazio">
-                        <h1>No momento não há doações! </h1>
+                        <h1>No momento não há eventos! </h1>
                     </div>
                 ) : isMobile ? (
                     // VERSÃO MOBILE
@@ -93,13 +81,10 @@ function ListaEvento() {
                         {eventosPaginaAtual.map((evento) => (
                             <div key={evento.id} className="mobile-table-row">
                                 <div className="mobile-table-cell">
-                                    <strong>ID:</strong> {evento.id}
-                                </div>
-                                <div className="mobile-table-cell">
                                     <strong>Título:</strong> {evento.titulo}
                                 </div>
                                 <div className="mobile-table-cell">
-                                    <strong>Endereço:</strong> {evento.endereco}
+                                    <strong>Endereço:</strong> {evento.address.rua} - {evento.address.cidade} - {evento.address.estado}
                                 </div>
                                 <div className="mobile-table-cell">
                                     <strong>Data:</strong> {evento.data}
@@ -111,7 +96,7 @@ function ListaEvento() {
                                         onClick={() => deletarEvento(id)}
                                         color="red"
                                         size="large"
-                                    />                                
+                                    />
                                 </div>
                             </div>
                         ))}
@@ -156,7 +141,6 @@ function ListaEvento() {
                     <Table celled>
                         <Table.Header>
                             <Table.Row className="table-row-listaEvento">
-                                <Table.HeaderCell className="table-row-listaEvento">ID</Table.HeaderCell>
                                 <Table.HeaderCell className="table-row-listaEvento">Título</Table.HeaderCell>
                                 <Table.HeaderCell className="table-row-listaEvento">Endereço</Table.HeaderCell>
                                 <Table.HeaderCell className="table-row-listaEvento">Data do Registro</Table.HeaderCell>
@@ -167,10 +151,9 @@ function ListaEvento() {
                         <Table.Body className="table-body-fixed">
                             {eventosPaginaAtual.map((evento) => (
                                 <Table.Row key={evento.id}>
-                                    <Table.Cell>{evento.id}</Table.Cell>
                                     <Table.Cell>{evento.titulo}</Table.Cell>
-                                    <Table.Cell>{evento.endereco}</Table.Cell>
-                                    <Table.Cell>{evento.data}</Table.Cell>
+                                    <Table.Cell>{evento.address.rua} - {evento.address.cidade} - {evento.address.estado}</Table.Cell>
+                                    <Table.Cell>{evento.data_inicio}</Table.Cell>
                                     <Table.Cell>
                                         <Icon name="pencil" color="yellow" size="large" />
                                         <Icon name="trash alternate outline" color="red" size="large" />
@@ -180,14 +163,14 @@ function ListaEvento() {
                             {/* Preencher linhas vazias */}
                             {Array.from({ length: linhasExtras }).map((_, index) => (
                                 <Table.Row key={`extra-${index}`}>
-                                    <Table.Cell colSpan="5" className="empty-row" />
+                                    <Table.Cell colSpan="" className="empty-row" />
                                 </Table.Row>
                             ))}
                         </Table.Body>
 
                         <Table.Footer className="table-footer-fixed">
                             <Table.Row>
-                                <Table.HeaderCell colSpan="5">
+                                <Table.HeaderCell colSpan="4">
                                     <Menu floated="right" pagination>
                                         <MenuItem
                                             as="a"
