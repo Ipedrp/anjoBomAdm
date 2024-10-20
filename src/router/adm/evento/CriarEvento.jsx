@@ -5,6 +5,7 @@ import NavbarAcoes from "../../../components/navbarAcoes/NavbarAcoes";
 import axios from 'axios'; // Certifique-se de importar o axios
 import './CriarEvento.css'; // Importa o CSS externo
 import { Link } from 'react-router-dom';
+import Swal from 'sweetalert2'
 
 const CriarEvento = () => {
     const [formCriarEvento, setFormCriarEvento] = useState({
@@ -18,16 +19,13 @@ const CriarEvento = () => {
             rua: '',
             numero: ''
         },
-        data_inicio: new Date().toISOString(),
-        data_fim: new Date().toISOString(),
+        data_inicio: '11-11-2012',
+        data_fim: '11-12-2024',
+        // photos_event: [],
     });
 
-    // const [dataArray, setDataArray] = useState([]);
+    const token = localStorage.getItem('authorization')
 
-    // useEffect(() => {
-    //     console.log('dataArray foi atualizado:', dataArray);
-    //     // Aqui você pode realizar outras operações necessárias quando dataArray mudar
-    // }, [dataArray]); // O array de dependências contém dataArray
 
     const [erros, setErros] = useState({
         address: {
@@ -115,7 +113,7 @@ const CriarEvento = () => {
         }
 
         // Validação de erros
-        
+
         setErros(prevState => {
             const newErros = { ...prevState };
             switch (name) {
@@ -193,153 +191,250 @@ const CriarEvento = () => {
 
             return newErros;
         });        // Validação de erros
-        
+
     };
 
     // Função para enviar o formulário
-    const EnviarEvento = async () => {
-        let newErros = { ...erros };
-        let valid = true;
+    // const EnviarEvento = async () => {
+    //     let newErros = { ...erros };
+    //     let valid = true;
 
 
-        // Validação dos campos fora do endereço
-        if (formCriarEvento.titulo === "") {
+    //     // Validação dos campos fora do endereço
+    //     if (formCriarEvento.titulo === "") {
 
-            newErros = { titulo: "Descrição é obrigatório" };
-            valid = false;
-            console.log("ta vazio essa porra!")
+    //         newErros = { titulo: "Descrição é obrigatório" };
+    //         valid = false;
+    //         console.log("ta vazio essa porra!")
 
-        }
-        else {
-            delete newErros.titulo; // Limpa o erro se o título não estiver vazio
-        }
+    //     }
+    //     else {
+    //         delete newErros.titulo; // Limpa o erro se o título não estiver vazio
+    //     }
 
-        // Verifica se a descrição está vazia
-        if (formCriarEvento.descricao === "") {
-            newErros.descricao = "Descrição é obrigatória"; // Adiciona o erro à descrição
-            valid = false;
-        } else {
-            delete newErros.descricao; // Limpa o erro se a descrição não estiver vazia
-        }
+    //     // Verifica se a descrição está vazia
+    //     if (formCriarEvento.descricao === "") {
+    //         newErros.descricao = "Descrição é obrigatória"; // Adiciona o erro à descrição
+    //         valid = false;
+    //     } else {
+    //         delete newErros.descricao; // Limpa o erro se a descrição não estiver vazia
+    //     }
 
-        // Validação dos campos dentro de `address`
-        if (!formCriarEvento.address.cep) {
-            newErros.address = { cep: "CEP é obrigatório" };
-            valid = false;
-        }
-        if (!formCriarEvento.address.estado) {
-            newErros.address = { ...newErros.address, estado: "Estado é obrigatório" };
-            valid = false;
-        }
-        if (!formCriarEvento.address.cidade) {
-            newErros.address = { ...newErros.address, cidade: "Cidade é obrigatória" };
-            valid = false;
-        }
-        if (!formCriarEvento.address.bairro) {
-            newErros.address = { ...newErros.address, bairro: "Bairro é obrigatório" };
-            valid = false;
-        }
-        if (!formCriarEvento.address.rua) {
-            newErros.address = { ...newErros.address, rua: "Rua é obrigatória" };
-            valid = false;
-        }
-        if (!formCriarEvento.address.numero) {
-            newErros.address = { ...newErros.address, numero: "Número é obrigatório" };
-            valid = false;
-        }
+    //     // Validação dos campos dentro de `address`
+    //     if (!formCriarEvento.address.cep) {
+    //         newErros.address = { cep: "CEP é obrigatório" };
+    //         valid = false;
+    //     }
+    //     if (!formCriarEvento.address.estado) {
+    //         newErros.address = { ...newErros.address, estado: "Estado é obrigatório" };
+    //         valid = false;
+    //     }
+    //     if (!formCriarEvento.address.cidade) {
+    //         newErros.address = { ...newErros.address, cidade: "Cidade é obrigatória" };
+    //         valid = false;
+    //     }
+    //     if (!formCriarEvento.address.bairro) {
+    //         newErros.address = { ...newErros.address, bairro: "Bairro é obrigatório" };
+    //         valid = false;
+    //     }
+    //     if (!formCriarEvento.address.rua) {
+    //         newErros.address = { ...newErros.address, rua: "Rua é obrigatória" };
+    //         valid = false;
+    //     }
+    //     if (!formCriarEvento.address.numero) {
+    //         newErros.address = { ...newErros.address, numero: "Número é obrigatório" };
+    //         valid = false;
+    //     }
 
-        if (valid) {
-            try {
-                // Envia os dados para o backend via POST 
-                const response = await axios.post('https://apianjobom.victordev.shop/admin/criarEvento', formCriarEvento, {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
+    //     // Criar o FormData para enviar como multipart/form-data
+    //     const formData = new FormData();
 
-                // Exibe o SweetAlert para sucesso
+    //     // Adiciona os dados do formulário ao FormData
+    //     formData.append('titulo', formCriarEvento.titulo);
+    //     formData.append('descricao', formCriarEvento.descricao);
+    //     formData.append('data_inicio', formCriarEvento.data_inicio);
+    //     formData.append('data_fim', formCriarEvento.data_fim);
+
+    //     // Adiciona o endereço (cada campo do endereço pode ser separado)
+    //     Object.keys(formCriarEvento.address).forEach((key) => {
+    //         formData.append(`address[${key}]`, formCriarEvento.address[key]);
+    //     });
+
+    //     // // Adiciona as fotos (photos_event) ao FormData
+    //     // formCriarEvento.photos_event.forEach((file, index) => {
+    //     //     formData.append(`photos_event[${index}]`, file);
+    //     // });
+
+
+
+    //     if (valid) {
+    //         console.log("verificar data: ", formCriarEvento);
+    //         try {
+    //             // Envia os dados para o backend via POST 
+    //             const response = await axios.post('https://apianjobom.victordev.shop/admin/criarEvento', formData, {
+    //                 headers: {
+    //                     'Content-Type': 'multipart/form-data',
+    //                     Authorization: token
+
+    //                 }
+    //             });
+
+    //             // Exibe o SweetAlert para sucesso
+    //             Swal.fire({
+    //                 title: "Sucesso!",
+    //                 text: "O evento foi criado!",
+    //                 icon: "success",
+    //                 customClass: {
+    //                     confirmButton: 'swal2-confirm-custom'
+    //                 }
+
+    //             });
+
+    //             console.log('Resposta do servidor:', response.data);
+
+    //             // Limpa o formulário após o envio
+    //             setFormCriarEvento({
+    //                 titulo: '',
+    //                 descricao: '',
+    //                 address: {
+    //                     cep: '',
+    //                     estado: '',
+    //                     cidade: '',
+    //                     bairro: '',
+    //                     rua: '',
+    //                     numero: ''
+    //                 },
+    //                 data_inicio: new Date().toISOString(),
+    //                 data_fim: new Date().toISOString(),
+    //             });
+
+    //         } catch (error) {
+    //             if (error.response && error.response.status === 409) {
+    //                 Swal.fire({
+    //                     title: "Temos um pequeno problema!",
+    //                     text: "O evento já está cadastrado.",
+    //                     icon: "error",
+    //                     customClass: {
+    //                         confirmButton: 'swal2-confirm-custom'
+    //                     }
+
+    //                 });
+    //             } else {
+    //                 Swal.fire({
+    //                     title: "Erro",
+    //                     text: "Erro ao enviar dados para o servidor.",
+    //                     icon: "error",
+    //                     customClass: {
+    //                         confirmButton: 'swal2-confirm-custom'
+    //                     }
+
+    //                 });
+    //             }
+    //         }
+    //     }
+
+
+
+    //     // Atualiza os erros
+
+    //     // if (valid) {
+
+    //     //     //Adiciona os dados ao array sem o campo id
+    //     //     setDataArray((prevArray) => [...prevArray, { ...formCriarEvento }]);
+
+    //     //     // Limpa o formulário
+    //     //     setFormCriarEvento({
+    //     //         titulo: '',
+    //     //         descricao: '',
+    //     //         address: {
+    //     //             cep: '',
+    //     //             estado: '',
+    //     //             cidade: '',
+    //     //             bairro: '',
+    //     //             rua: '',
+    //     //             numero: ''
+    //     //         },
+    //     //         data_inicio: new Date().toISOString(),
+    //     //         data_fim: new Date().toISOString(),
+    //     //     });
+    //     // }
+
+    //     setErros(newErros);
+    // }
+
+    const enviarFormulario = async () => {
+        const formData = new FormData();
+
+        // Adding form data (text inputs)
+        formData.append('titulo', formCriarEvento.titulo);
+        formData.append('descricao', formCriarEvento.descricao);
+        formData.append('data_inicio', formCriarEvento.data_inicio);
+        formData.append('data_fim', formCriarEvento.data_fim);
+
+        // Adding address data
+        formData.append('address[cep]', formCriarEvento.address.cep);
+        formData.append('address[estado]', formCriarEvento.address.estado);
+        formData.append('address[cidade]', formCriarEvento.address.cidade);
+        formData.append('address[bairro]', formCriarEvento.address.bairro);
+        formData.append('address[rua]', formCriarEvento.address.rua);
+        formData.append('address[numero]', formCriarEvento.address.numero);
+
+        // Optional: If you have photos to upload
+        // if (formCriarEvento.photos_event.length > 0) {
+        //     formCriarEvento.photos_event.forEach((file, index) => {
+        //         formData.append(`photos_event[${index}]`, file);
+        //     });
+        // }
+
+        // // Sending data via POST
+        // console.log(formData)
+        // Debug: Log FormData contents
+        console.log("Form Data entries:");
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ": " + pair[1]);
+        }   
+
+        try {
+            const response = await axios.post('https://apianjobom.victordev.shop/admin/criarEvento', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: token
+                }
+            });
+
+
+            if (response.ok) {
                 Swal.fire({
                     title: "Sucesso!",
-                    text: "O evento foi criado!",
+                    text: "Evento criado com sucesso!",
                     icon: "success",
                     customClass: {
                         confirmButton: 'swal2-confirm-custom'
                     }
-
                 });
-
-                console.log('Resposta do servidor:', response.data);
-
-                // Limpa o formulário após o envio
-                setFormCriarEvento({
-                    titulo: '',
-                    descricao: '',
-                    address: {
-                        cep: '',
-                        estado: '',
-                        cidade: '',
-                        bairro: '',
-                        rua: '',
-                        numero: ''
-                    },
-                    data_inicio: new Date().toISOString(),
-                    data_fim: new Date().toISOString(),
+            } else {
+                const errorData = await response.json();
+                Swal.fire({
+                    title: "Erro",
+                    text: errorData.message || "Erro ao criar o evento.",
+                    icon: "error",
+                    customClass: {
+                        confirmButton: 'swal2-confirm-custom'
+                    }
                 });
-
-            } catch (error) {
-                if (error.response && error.response.status === 409) {
-                    Swal.fire({
-                        title: "Temos um pequeno problema!",
-                        text: "O evento já está cadastrado.",
-                        icon: "error",
-                        customClass: {
-                            confirmButton: 'swal2-confirm-custom'
-                        }
-
-                    });
-                } else {
-                    Swal.fire({
-                        title: "Erro",
-                        text: "Erro ao enviar dados para o servidor.",
-                        icon: "error",
-                        customClass: {
-                            confirmButton: 'swal2-confirm-custom'
-                        }
-
-                    });
-                }
             }
+        } catch (error) {
+            console.error('Erro na requisição:', error);
+            Swal.fire({
+                title: "Erro",
+                text: "Erro ao enviar dados para o servidor.",
+                icon: "error",
+                customClass: {
+                    confirmButton: 'swal2-confirm-custom'
+                }
+            });
         }
-
-
-
-        // Atualiza os erros
-
-        // if (valid) {
-
-        //     //Adiciona os dados ao array sem o campo id
-        //     setDataArray((prevArray) => [...prevArray, { ...formCriarEvento }]);
-
-        //     // Limpa o formulário
-        //     setFormCriarEvento({
-        //         titulo: '',
-        //         descricao: '',
-        //         address: {
-        //             cep: '',
-        //             estado: '',
-        //             cidade: '',
-        //             bairro: '',
-        //             rua: '',
-        //             numero: ''
-        //         },
-        //         data_inicio: new Date().toISOString(),
-        //         data_fim: new Date().toISOString(),
-        //     });
-        // }
-
-        setErros(newErros);
-    }
-
+    };
 
 
     return (
@@ -430,6 +525,7 @@ const CriarEvento = () => {
                             value={formCriarEvento.address.numero}
                             onChange={handleChange}
                         />
+
                     </FormGroup>
                     <FormField
                         error={erros.descricao ? { content: erros.descricao } : null}
@@ -441,11 +537,12 @@ const CriarEvento = () => {
                         onChange={handleChange}
                     />
                 </Form>
+
                 <div className="container-acoes-btnc-criarEvento">
                     <Link to="/listaEvento">
                         <Button type="button" className="voltar">Voltar</Button>
                     </Link>
-                    <Button type="button" className="criarEvento" onClick={EnviarEvento}>Criar Evento</Button>
+                    <Button type="button" className="criarEvento" onClick={enviarFormulario}>Criar Evento</Button>
                 </div>
             </div>
         </>

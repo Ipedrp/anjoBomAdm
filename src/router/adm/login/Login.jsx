@@ -115,10 +115,11 @@ const Login = () => {
                         <Form.Field>
                             <label>Email</label>
                             <FormInput
-                                type="email"
                                 placeholder="Digite seu email"
                                 icon={"mail"}
+                                iconPosition='left'
                                 name="email"
+                                type="email"
                                 value={formValuesLogin.email}
                                 onChange={handleChange}
                                 error={formErrors.email && (formValuesLogin.email === '' ? "Email é obrigatório" : errorMessage)}
@@ -127,10 +128,11 @@ const Login = () => {
                         <Form.Field>
                             <label>Senha</label>
                             <FormInput
-                                type="password"
                                 placeholder="Digite sua senha"
                                 icon={"lock"}
+                                iconPosition='left'
                                 name="password"
+                                type="password"
                                 value={formValuesLogin.password}
                                 onChange={handleChange}
                                 error={formErrors.password && (formValuesLogin.password === '' ? "Senha é obrigatória" : errorMessage)}

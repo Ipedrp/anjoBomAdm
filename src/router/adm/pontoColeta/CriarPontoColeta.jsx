@@ -123,7 +123,7 @@ const CriarPontoColeta = () => {
                     }
                     break;
                 case "urlMap":
-                    if (value.length > 10) {
+                    if (value.length > 254) {
                         newErros.urlMap = "Máximo 255 caracteres";
                     } else {
                         newErros.urlMap = "";
@@ -139,9 +139,9 @@ const CriarPontoColeta = () => {
                     }
                     break;
                 case "address.rua":
-                    if (value.length > 29) {
+                    if (value.length > 49) {
                         if (!newErros.address) newErros.address = {};
-                        newErros.address.rua = "Máximo 30 caracteres";
+                        newErros.address.rua = "Máximo 50 caracteres";
                     } else {
                         if (newErros.address) delete newErros.address.rua;
                         if (Object.keys(newErros.address || {}).length === 0) delete newErros.address;
@@ -157,18 +157,18 @@ const CriarPontoColeta = () => {
                     }
                     break;
                 case "address.cidade":
-                    if (value.length > 29) {
+                    if (value.length > 49) {
                         if (!newErros.address) newErros.address = {};
-                        newErros.address.cidade = "Máximo 30 caracteres";
+                        newErros.address.cidade = "Máximo 50 caracteres";
                     } else {
                         if (newErros.address) delete newErros.address.cidade;
                         if (Object.keys(newErros.address || {}).length === 0) delete newErros.address;
                     }
                     break;
                 case "address.bairro":
-                    if (value.length > 29) {
+                    if (value.length > 49) {
                         if (!newErros.address) newErros.address = {};
-                        newErros.address.bairro = "Máximo 30 caracteres";
+                        newErros.address.bairro = "Máximo 50 caracteres";
                     } else {
                         if (newErros.address) delete newErros.address.bairro;
                         if (Object.keys(newErros.address || {}).length === 0) delete newErros.address;
@@ -396,7 +396,7 @@ const CriarPontoColeta = () => {
                             placeholder="Digite a cidade"
                             name="address.cidade"
                             type="text"
-                            maxLength={30}
+                            maxLength={50}
                             value={formCriarPontoColeta.address.cidade}
                             onChange={handleChange}
                         />
@@ -407,7 +407,7 @@ const CriarPontoColeta = () => {
                             placeholder="Digite o bairro"
                             name="address.bairro"
                             type="text"
-                            maxLength={30}
+                            maxLength={50}
                             value={formCriarPontoColeta.address.bairro}
                             onChange={handleChange}
                         />
@@ -420,7 +420,7 @@ const CriarPontoColeta = () => {
                             placeholder="Digite a rua"
                             name="address.rua"
                             type="text"
-                            maxLength={30}
+                            maxLength={50}
                             value={formCriarPontoColeta.address.rua}
                             onChange={handleChange}
                         />
