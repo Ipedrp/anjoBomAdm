@@ -264,9 +264,8 @@ const CriarPontoColeta = () => {
                     title: "Sucesso!",
                     text: "O ponto de coleta foi criado!",
                     icon: "success",
-                    customClass: {
-                        confirmButton: 'swal2-confirm-custom'
-                    }
+                    timer: 1300,
+                    showConfirmButton: false               
 
                 });
                 console.log('Resposta do servidor:', response.data);

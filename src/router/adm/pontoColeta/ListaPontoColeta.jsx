@@ -3,9 +3,10 @@ import { Button, Table, Icon, Menu, MenuItem, Form, Input, FormInput } from 'sem
 import { Link } from "react-router-dom";
 import NavbarAcoes from "../../../components/navbarAcoes/NavbarAcoes";
 import Header from "../../../components/header/Header";
-import { useMediaQuery } from 'react-responsive';
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useMediaQuery } from 'react-responsive';
+
 import './ListaPontoColeta.css';
 
 function ListaPontoColeta() {
@@ -63,6 +64,13 @@ function ListaPontoColeta() {
             await axios.delete(`https://apianjobom.victordev.shop/admin/deletarPontoDeColeta/${id}`, {
                 headers: { Authorization: token }
             });
+            Swal.fire({
+                icon: 'success',
+                title: 'Deletado!',
+                text: 'O ponto de coleta foi deletado.',
+                timer: 1300,
+                showConfirmButton: false
+            });
             fetchPontos(); // Atualiza a lista após deletar
         } catch (error) {
             console.error('Erro ao deletar o ponto de coleta:', error);
@@ -82,13 +90,6 @@ function ListaPontoColeta() {
         }).then((result) => {
             if (result.isConfirmed) {
                 deletarPontoColeta(id);
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Deletado!',
-                    text: 'O ponto de coleta foi deletado.',
-                    timer: 1300,
-                    showConfirmButton: false
-                });
             }
         });
     };
@@ -105,16 +106,7 @@ function ListaPontoColeta() {
 
 
     const validateCep = async (value) => {
-        // if (!value) {
-        //     setErrorCep("CEP é obrigatório");
-        //     return;
-        // }
-
-        // if (value.length > 9) {
-        //     setErrorCep("Máximo 9 caracteres");
-        //     return;
-        // }
-
+        
         try {
             const response = await axios.get(`https://viacep.com.br/ws/${value}/json/`);
             if (response.data && !response.data.erro) {
@@ -160,12 +152,11 @@ function ListaPontoColeta() {
         setEditando(true);
     };
 
-
-
     // Função para cancelar a edição
     const cancelarEdicao = () => {
         setEditando(false);
         setPontoParaEditar(null);
+        setErros('');
     };
 
     // Função para enviar o formulário editado
