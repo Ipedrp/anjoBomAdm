@@ -8,19 +8,16 @@
     padding: 20px;
     max-width: 600px;
     width: 100%;
-    height: 700px;
-    /* Altura total do formulário */
+    height: 680px;
     box-shadow: 1px 3px 15px 4px #c3c3ce;
     background-color: #fff !important;
 }
 
 .input-area-criarPontoColeta {
     width: 90%;
-
     display: flex;
     flex-direction: column;
     justify-content: space-around;
-    /* Espaça os inputs para que erros caibam sem expandir */
 }
 
 
@@ -29,9 +26,7 @@
     justify-content: space-between;
     width: 90%;
     margin-top: 20px;
-    /* Ajuste a margem conforme necessário */
     flex-shrink: 0;
-    /* Impede a área de botões de encolher */
 }
 
 /* Estilos dos botões e inputs */
@@ -53,30 +48,24 @@
 @media (max-width: 600px) {
     .form-container-criarPontoColeta {
         height: auto;
-        /* Deixa a altura flexível no mobile */
         padding: 15px;
         margin: 30px auto;
     }
 
     .input-area-criarPontoColeta {
         width: 100%;
-        /* Usa largura total */
         gap: 10px;
-        /* Reduz o espaçamento entre inputs */
     }
 
    
     .blue-label-criarPontoColeta {
         font-size: 0.9em;
-        /* Tamanho menor para as labels */
     }
 
     .form-container-criarPontoColeta .field>.error {
         font-size: 0.85em;
-        /* Diminui o tamanho das mensagens de erro */
         padding-top: 3px;
         color: #D9534F;
-        /* Ajusta cor para destaque */
     }
 
     .container-acoes-btnc-criarPontoColeta {

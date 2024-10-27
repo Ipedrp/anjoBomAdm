@@ -1,35 +1,35 @@
 .form-container-criarEvento {
     display: flex;
-    flex-direction: column; 
-    justify-content: space-between; 
+    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
     border-radius: 14px;
     margin: 50px auto;
     padding: 20px;
     max-width: 600px;
     width: 100%;
-    min-height: 500px;
+    height: 820px;
     box-shadow: 1px 3px 15px 4px #c3c3ce;
     background-color: #fff !important;
 }
 
-.form-container-criarEvento form {
+.input-area-criarEvento {
     width: 90%;
-    flex-grow: 1; 
-}
-
-.form-container-criarEvento h2{
-    color: #135F99;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    /* Espaça os inputs para que erros caibam sem expandir */
 }
 
 .container-acoes-btnc-criarEvento {
     display: flex;
     justify-content: space-between;
     width: 90%;
-    margin-top: 40px;
-    position: relative;
+    margin-top: 20px;
+    flex-shrink: 0;
 }
 
+/* Estilos dos botões e inputs */
 .blue-label-criarEvento{
     color: #135F99 !important;
 }

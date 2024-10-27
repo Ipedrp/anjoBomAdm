@@ -21,18 +21,28 @@ const CriarEvento = () => {
         },
         data_inicio: '11-11-2012',
         data_fim: '11-12-2024',
-        // photos_event: [],
+
     });
 
-    const token = localStorage.getItem('authorization')
+    // Estado para armazenar os arquivos selecionados
+    const [files, setFiles] = useState([]);
 
+    const token = localStorage.getItem('authorization');
 
     const [erros, setErros] = useState({
+        titulo: "",
+        descricao: "",
         address: {
             cep: "",
-            // outros campos de erro do endereço, se necessário
+            estado: "",
+            cidade: "",
+            bairro: "",
+            rua: "",
+            numero: "",
         },
+        arquivos: "", // Novo campo para erros de arquivos
     });
+
 
     const [errorCep, setErrorCep] = useState(""); // Para o erro de CEP
 
@@ -42,7 +52,7 @@ const CriarEvento = () => {
         // Aplica a máscara para CEP no formato "99999-999"
         const match = cleaned.match(/^(\d{5})(\d{3})$/);
         return match ? `${match[1]}-${match[2]}` : cleaned;
-    }
+    };
 
     const validateCep = async (value) => {
         if (!value) {
@@ -125,8 +135,8 @@ const CriarEvento = () => {
                     }
                     break;
                 case "descricao":
-                    if (value.length > 10) {
-                        newErros.descricao = "Máximo 15 caracteres";
+                    if (value.length > 3999) {
+                        newErros.descricao = "Máximo 4000 caracteres";
                     } else {
                         newErros.descricao = "";
                     }
@@ -141,9 +151,9 @@ const CriarEvento = () => {
                     }
                     break;
                 case "address.rua":
-                    if (value.length > 29) {
+                    if (value.length > 49) {
                         if (!newErros.address) newErros.address = {};
-                        newErros.address.rua = "Máximo 30 caracteres";
+                        newErros.address.rua = "Máximo 50 caracteres";
                     } else {
                         if (newErros.address) delete newErros.address.rua;
                         if (Object.keys(newErros.address || {}).length === 0) delete newErros.address;
@@ -159,18 +169,18 @@ const CriarEvento = () => {
                     }
                     break;
                 case "address.cidade":
-                    if (value.length > 29) {
+                    if (value.length > 49) {
                         if (!newErros.address) newErros.address = {};
-                        newErros.address.cidade = "Máximo 30 caracteres";
+                        newErros.address.cidade = "Máximo 50 caracteres";
                     } else {
                         if (newErros.address) delete newErros.address.cidade;
                         if (Object.keys(newErros.address || {}).length === 0) delete newErros.address;
                     }
                     break;
                 case "address.bairro":
-                    if (value.length > 29) {
+                    if (value.length > 49) {
                         if (!newErros.address) newErros.address = {};
-                        newErros.address.bairro = "Máximo 30 caracteres";
+                        newErros.address.bairro = "Máximo 50 caracteres";
                     } else {
                         if (newErros.address) delete newErros.address.bairro;
                         if (Object.keys(newErros.address || {}).length === 0) delete newErros.address;
@@ -194,246 +204,130 @@ const CriarEvento = () => {
 
     };
 
-    // Função para enviar o formulário
-    // const EnviarEvento = async () => {
-    //     let newErros = { ...erros };
-    //     let valid = true;
-
-
-    //     // Validação dos campos fora do endereço
-    //     if (formCriarEvento.titulo === "") {
-
-    //         newErros = { titulo: "Descrição é obrigatório" };
-    //         valid = false;
-    //         console.log("ta vazio essa porra!")
-
-    //     }
-    //     else {
-    //         delete newErros.titulo; // Limpa o erro se o título não estiver vazio
-    //     }
-
-    //     // Verifica se a descrição está vazia
-    //     if (formCriarEvento.descricao === "") {
-    //         newErros.descricao = "Descrição é obrigatória"; // Adiciona o erro à descrição
-    //         valid = false;
-    //     } else {
-    //         delete newErros.descricao; // Limpa o erro se a descrição não estiver vazia
-    //     }
-
-    //     // Validação dos campos dentro de `address`
-    //     if (!formCriarEvento.address.cep) {
-    //         newErros.address = { cep: "CEP é obrigatório" };
-    //         valid = false;
-    //     }
-    //     if (!formCriarEvento.address.estado) {
-    //         newErros.address = { ...newErros.address, estado: "Estado é obrigatório" };
-    //         valid = false;
-    //     }
-    //     if (!formCriarEvento.address.cidade) {
-    //         newErros.address = { ...newErros.address, cidade: "Cidade é obrigatória" };
-    //         valid = false;
-    //     }
-    //     if (!formCriarEvento.address.bairro) {
-    //         newErros.address = { ...newErros.address, bairro: "Bairro é obrigatório" };
-    //         valid = false;
-    //     }
-    //     if (!formCriarEvento.address.rua) {
-    //         newErros.address = { ...newErros.address, rua: "Rua é obrigatória" };
-    //         valid = false;
-    //     }
-    //     if (!formCriarEvento.address.numero) {
-    //         newErros.address = { ...newErros.address, numero: "Número é obrigatório" };
-    //         valid = false;
-    //     }
-
-    //     // Criar o FormData para enviar como multipart/form-data
-    //     const formData = new FormData();
-
-    //     // Adiciona os dados do formulário ao FormData
-    //     formData.append('titulo', formCriarEvento.titulo);
-    //     formData.append('descricao', formCriarEvento.descricao);
-    //     formData.append('data_inicio', formCriarEvento.data_inicio);
-    //     formData.append('data_fim', formCriarEvento.data_fim);
-
-    //     // Adiciona o endereço (cada campo do endereço pode ser separado)
-    //     Object.keys(formCriarEvento.address).forEach((key) => {
-    //         formData.append(`address[${key}]`, formCriarEvento.address[key]);
-    //     });
-
-    //     // // Adiciona as fotos (photos_event) ao FormData
-    //     // formCriarEvento.photos_event.forEach((file, index) => {
-    //     //     formData.append(`photos_event[${index}]`, file);
-    //     // });
-
-
-
-    //     if (valid) {
-    //         console.log("verificar data: ", formCriarEvento);
-    //         try {
-    //             // Envia os dados para o backend via POST 
-    //             const response = await axios.post('https://apianjobom.victordev.shop/admin/criarEvento', formData, {
-    //                 headers: {
-    //                     'Content-Type': 'multipart/form-data',
-    //                     Authorization: token
-
-    //                 }
-    //             });
-
-    //             // Exibe o SweetAlert para sucesso
-    //             Swal.fire({
-    //                 title: "Sucesso!",
-    //                 text: "O evento foi criado!",
-    //                 icon: "success",
-    //                 customClass: {
-    //                     confirmButton: 'swal2-confirm-custom'
-    //                 }
-
-    //             });
-
-    //             console.log('Resposta do servidor:', response.data);
-
-    //             // Limpa o formulário após o envio
-    //             setFormCriarEvento({
-    //                 titulo: '',
-    //                 descricao: '',
-    //                 address: {
-    //                     cep: '',
-    //                     estado: '',
-    //                     cidade: '',
-    //                     bairro: '',
-    //                     rua: '',
-    //                     numero: ''
-    //                 },
-    //                 data_inicio: new Date().toISOString(),
-    //                 data_fim: new Date().toISOString(),
-    //             });
-
-    //         } catch (error) {
-    //             if (error.response && error.response.status === 409) {
-    //                 Swal.fire({
-    //                     title: "Temos um pequeno problema!",
-    //                     text: "O evento já está cadastrado.",
-    //                     icon: "error",
-    //                     customClass: {
-    //                         confirmButton: 'swal2-confirm-custom'
-    //                     }
-
-    //                 });
-    //             } else {
-    //                 Swal.fire({
-    //                     title: "Erro",
-    //                     text: "Erro ao enviar dados para o servidor.",
-    //                     icon: "error",
-    //                     customClass: {
-    //                         confirmButton: 'swal2-confirm-custom'
-    //                     }
-
-    //                 });
-    //             }
-    //         }
-    //     }
-
-
-
-    //     // Atualiza os erros
-
-    //     // if (valid) {
-
-    //     //     //Adiciona os dados ao array sem o campo id
-    //     //     setDataArray((prevArray) => [...prevArray, { ...formCriarEvento }]);
-
-    //     //     // Limpa o formulário
-    //     //     setFormCriarEvento({
-    //     //         titulo: '',
-    //     //         descricao: '',
-    //     //         address: {
-    //     //             cep: '',
-    //     //             estado: '',
-    //     //             cidade: '',
-    //     //             bairro: '',
-    //     //             rua: '',
-    //     //             numero: ''
-    //     //         },
-    //     //         data_inicio: new Date().toISOString(),
-    //     //         data_fim: new Date().toISOString(),
-    //     //     });
-    //     // }
-
-    //     setErros(newErros);
-    // }
+    // Função para lidar com a mudança dos arquivos selecionados
+    const onFileChange = (e) => {
+        setFiles(Array.from(e.target.files)); // Convertendo a lista de arquivos em um array
+    };
 
     const enviarFormulario = async () => {
-        const formData = new FormData();
+        let newErros = { titulo: "", descricao: "", address: {}, arquivos: "" };
+        let valid = true;
 
-        // Adding form data (text inputs)
-        formData.append('titulo', formCriarEvento.titulo);
-        formData.append('descricao', formCriarEvento.descricao);
-        formData.append('data_inicio', formCriarEvento.data_inicio);
-        formData.append('data_fim', formCriarEvento.data_fim);
+        // Validação dos campos fora do endereço
+        if (formCriarEvento.titulo === "") {
+            newErros.titulo = "Título é obrigatório";
+            valid = false;
+        }
 
-        // Adding address data
-        formData.append('address[cep]', formCriarEvento.address.cep);
-        formData.append('address[estado]', formCriarEvento.address.estado);
-        formData.append('address[cidade]', formCriarEvento.address.cidade);
-        formData.append('address[bairro]', formCriarEvento.address.bairro);
-        formData.append('address[rua]', formCriarEvento.address.rua);
-        formData.append('address[numero]', formCriarEvento.address.numero);
+        // Verifica se a descrição está vazia
+        if (formCriarEvento.descricao === "") {
+            newErros.descricao = "Descrição é obrigatória";
+            valid = false;
+        }
 
-        // Optional: If you have photos to upload
-        // if (formCriarEvento.photos_event.length > 0) {
-        //     formCriarEvento.photos_event.forEach((file, index) => {
-        //         formData.append(`photos_event[${index}]`, file);
-        //     });
-        // }
+        // Validação dos campos dentro de `address`
+        if (!formCriarEvento.address.cep) {
+            newErros.address.cep = "CEP é obrigatório";
+            valid = false;
+        }
+        if (!formCriarEvento.address.estado) {
+            newErros.address.estado = "Estado é obrigatório";
+            valid = false;
+        }
+        if (!formCriarEvento.address.cidade) {
+            newErros.address.cidade = "Cidade é obrigatória";
+            valid = false;
+        }
+        if (!formCriarEvento.address.bairro) {
+            newErros.address.bairro = "Bairro é obrigatório";
+            valid = false;
+        }
+        if (!formCriarEvento.address.rua) {
+            newErros.address.rua = "Rua é obrigatória";
+            valid = false;
+        }
+        if (!formCriarEvento.address.numero) {
+            newErros.address.numero = "Número é obrigatório";
+            valid = false;
+        }
+        // Validação dos arquivos
+        if (files.length === 0) {
+            newErros.arquivos = "Ao menos uma foto deve ser selecionada."; // Adiciona o erro se nenhum arquivo foi selecionado
+            valid = false;
+        }
 
-        // // Sending data via POST
-        // console.log(formData)
-        // Debug: Log FormData contents
-        console.log("Form Data entries:");
-        for (let pair of formData.entries()) {
-            console.log(pair[0] + ": " + pair[1]);
-        }   
+        // Atualiza o estado de erros
+        setErros(newErros);
 
-        try {
-            const response = await axios.post('https://apianjobom.victordev.shop/admin/criarEvento', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    Authorization: token
-                }
+        if (valid) {
+
+            const formData = new FormData();
+
+            // Adding form data (text inputs)
+            formData.append('titulo', formCriarEvento.titulo);
+            formData.append('descricao', formCriarEvento.descricao);
+            formData.append('data_inicio', formCriarEvento.data_inicio);
+            formData.append('data_fim', formCriarEvento.data_fim);
+            formData.append('address', JSON.stringify(formCriarEvento.address)); // Convertendo o endereço para JSON
+
+            // Adicionando os arquivos ao FormData
+            files.forEach((file) => {
+                formData.append('photos_event', file);
             });
 
+            try {
+                // Enviando os dados para o servidor usando Axios
+                const response = await axios.post('https://apianjobom.victordev.shop/admin/criarEvento', formData, {
+                    headers: {
+                        Authorization: token // Especificando o tipo de conteúdo
+                    }
 
-            if (response.ok) {
+                });
+
+                //Exibe o SweetAlert para sucesso
                 Swal.fire({
                     title: "Sucesso!",
-                    text: "Evento criado com sucesso!",
+                    text: "O evento foi criado!",
                     icon: "success",
                     customClass: {
                         confirmButton: 'swal2-confirm-custom'
                     }
+
                 });
-            } else {
-                const errorData = await response.json();
+
+                console.log('Resposta do servidor:', response.data);
+
+                // Limpa o formulário após o envio
+                setFormCriarEvento({
+                    titulo: '',
+                    descricao: '',
+                    address: {
+                        cep: '',
+                        estado: '',
+                        cidade: '',
+                        bairro: '',
+                        rua: '',
+                        numero: ''
+                    },
+                    data_inicio: '',
+                    data_fim: '',
+                });
+
+            } catch (error) {
+                console.error('Erro na requisição:', error);
                 Swal.fire({
                     title: "Erro",
-                    text: errorData.message || "Erro ao criar o evento.",
+                    text: "Erro ao enviar dados para o servidor.",
                     icon: "error",
                     customClass: {
                         confirmButton: 'swal2-confirm-custom'
                     }
                 });
             }
-        } catch (error) {
-            console.error('Erro na requisição:', error);
-            Swal.fire({
-                title: "Erro",
-                text: "Erro ao enviar dados para o servidor.",
-                icon: "error",
-                customClass: {
-                    confirmButton: 'swal2-confirm-custom'
-                }
-            });
         }
+
+        setErros(newErros);
+
     };
 
 
@@ -442,102 +336,111 @@ const CriarEvento = () => {
             <NavbarAcoes />
             <Header title2={"Evento"} />
             <div className="form-container-criarEvento">
-                {/* <h2>Evento</h2> */}
-                <Form>
+                <div className="input-area-criarEvento">
+                    <Form>
 
-                    <FormInput
-                        fluid
-                        error={erros.titulo ? { content: erros.titulo } : null}
-                        label={<label className="blue-label-criarEvento">Título do Evento</label>}
-                        placeholder="Digite o título do evento"
-                        name="titulo"
-                        type="text"
-                        maxLength={70}
-                        value={formCriarEvento.titulo}
-                        onChange={handleChange}
-                    />
-                    <FormInput
-                        fluid
-                        error={!!errorCep || (erros.address && erros.address.cep) ? { content: errorCep || erros.address.cep } : null}
-                        label={<label className="blue-label-criarEvento">CEP</label>}
-                        placeholder="Digite seu CEP"
-                        name="address.cep"
-                        type="text"
-                        maxLength={9}
-                        value={formCriarEvento.address.cep}
-                        onChange={handleChange}
-                    />
-                    <FormGroup widths="equal">
                         <FormInput
                             fluid
-                            error={!!(erros.address && erros.address.estado) && { content: erros.address.estado }}
-                            label={<label className="blue-label-criarEvento">Estado</label>}
-                            placeholder="Digite seu estado"
-                            name="address.estado"
+                            error={erros.titulo ? { content: erros.titulo } : null}
+                            label={<label className="blue-label-criarEvento">Título do Evento</label>}
+                            placeholder="Digite o título do evento"
+                            name="titulo"
                             type="text"
-                            maxLength={2}
-                            value={formCriarEvento.address.estado}
+                            maxLength={70}
+                            value={formCriarEvento.titulo}
                             onChange={handleChange}
                         />
                         <FormInput
                             fluid
-                            error={!!(erros.address && erros.address.cidade) && { content: erros.address.cidade }}
-                            label={<label className="blue-label-criarEvento">Cidade</label>}
-                            placeholder="Digite sua cidade"
-                            name="address.cidade"
+                            error={!!errorCep || (erros.address && erros.address.cep) ? { content: errorCep || erros.address.cep } : null}
+                            label={<label className="blue-label-criarEvento">CEP</label>}
+                            placeholder="Digite seu CEP"
+                            name="address.cep"
                             type="text"
-                            maxLength={30}
-                            value={formCriarEvento.address.cidade}
+                            maxLength={9}
+                            value={formCriarEvento.address.cep}
                             onChange={handleChange}
                         />
-                        <FormInput
-                            fluid
-                            error={!!(erros.address && erros.address.bairro) && { content: erros.address.bairro }}
-                            label={<label className="blue-label-criarEvento">Bairro</label>}
-                            placeholder="Digite seu bairro"
-                            name="address.bairro"
-                            type="text"
-                            maxLength={30}
-                            value={formCriarEvento.address.bairro}
-                            onChange={handleChange}
-                        />
-                    </FormGroup>
-                    <FormGroup widths="equal">
-                        <FormInput
-                            fluid
-                            error={!!(erros.address && erros.address.rua) && { content: erros.address.rua }}
-                            label={<label className="blue-label-criarEvento">Rua</label>}
-                            placeholder="Digite sua rua"
-                            name="address.rua"
-                            type="text"
-                            maxLength={30}
-                            value={formCriarEvento.address.rua}
-                            onChange={handleChange}
-                        />
-                        <FormInput
-                            fluid
-                            error={!!(erros.address && erros.address.numero) && { content: erros.address.numero }}
-                            label={<label className="blue-label-criarEvento">Número</label>}
-                            placeholder="Digite o número de sua residência"
-                            name="address.numero"
-                            type="text"
-                            maxLength={6}
-                            value={formCriarEvento.address.numero}
-                            onChange={handleChange}
-                        />
+                        <FormGroup widths="equal">
+                            <FormInput
+                                fluid
+                                error={!!(erros.address && erros.address.estado) && { content: erros.address.estado }}
+                                label={<label className="blue-label-criarEvento">Estado</label>}
+                                placeholder="Digite seu estado"
+                                name="address.estado"
+                                type="text"
+                                maxLength={2}
+                                value={formCriarEvento.address.estado}
+                                onChange={handleChange}
+                            />
+                            <FormInput
+                                fluid
+                                error={!!(erros.address && erros.address.cidade) && { content: erros.address.cidade }}
+                                label={<label className="blue-label-criarEvento">Cidade</label>}
+                                placeholder="Digite sua cidade"
+                                name="address.cidade"
+                                type="text"
+                                maxLength={50}
+                                value={formCriarEvento.address.cidade}
+                                onChange={handleChange}
+                            />
+                            <FormInput
+                                fluid
+                                error={!!(erros.address && erros.address.bairro) && { content: erros.address.bairro }}
+                                label={<label className="blue-label-criarEvento">Bairro</label>}
+                                placeholder="Digite seu bairro"
+                                name="address.bairro"
+                                type="text"
+                                maxLength={50}
+                                value={formCriarEvento.address.bairro}
+                                onChange={handleChange}
+                            />
+                        </FormGroup>
+                        <FormGroup widths="equal">
+                            <FormInput
+                                fluid
+                                error={!!(erros.address && erros.address.rua) && { content: erros.address.rua }}
+                                label={<label className="blue-label-criarEvento">Rua</label>}
+                                placeholder="Digite sua rua"
+                                name="address.rua"
+                                type="text"
+                                maxLength={50}
+                                value={formCriarEvento.address.rua}
+                                onChange={handleChange}
+                            />
+                            <FormInput
+                                fluid
+                                error={!!(erros.address && erros.address.numero) && { content: erros.address.numero }}
+                                label={<label className="blue-label-criarEvento">Número</label>}
+                                placeholder="Digite o número de sua residência"
+                                name="address.numero"
+                                type="text"
+                                maxLength={6}
+                                value={formCriarEvento.address.numero}
+                                onChange={handleChange}
+                            />
 
-                    </FormGroup>
-                    <FormField
-                        error={erros.descricao ? { content: erros.descricao } : null}
-                        control={TextArea}
-                        label={<label className="blue-label-criarEvento">Descrição do evento</label>}
-                        placeholder="Descreva o que este evento irá realizar..."
-                        name="descricao"
-                        value={formCriarEvento.descricao}
-                        onChange={handleChange}
-                    />
-                </Form>
-
+                        </FormGroup>
+                        <Form.Input
+                            type="file"
+                            label={<label className="blue-label-criarEvento">Fotos do evento</label>}
+                            multiple
+                            onChange={onFileChange}
+                            error={erros.arquivos ? { content: erros.arquivos } : null}
+                        />
+                        <FormField
+                            error={erros.descricao ? { content: erros.descricao } : null}
+                            control={TextArea}
+                            label={<label className="blue-label-criarEvento">Descrição do evento</label>}
+                            placeholder="Descreva o que este evento irá realizar..."
+                            name="descricao"
+                            maxLength={4000}
+                            value={formCriarEvento.descricao}
+                            onChange={handleChange}
+                            style={{ resize: "none" }} 
+                        />
+                    </Form>
+                </div>
                 <div className="container-acoes-btnc-criarEvento">
                     <Link to="/listaEvento">
                         <Button type="button" className="voltar">Voltar</Button>
