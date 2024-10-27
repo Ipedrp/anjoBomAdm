@@ -20,7 +20,7 @@ const NavbarAcoes = () => {
                             <Grid.Row columns={5}>
                                 <Grid.Column>
                                     <Link to="/home">
-                                        <div className="grid-column-content">Home</div>
+                                        <div className="grid-column-content">HOME</div>
                                     </Link>
                                 </Grid.Column>
                                 <Grid.Column>

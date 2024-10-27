@@ -62,9 +62,9 @@ const Login = () => {
 
                 Swal.fire({
                     icon: 'success',
-                    title: 'Login bem-sucedido!',
+                    title: '<div class="login-ok"><p>Login bem-sucedido!</p></div>',
                     text: 'Você será redirecionado.',
-                    timer: 2000,
+                    timer: 1800,
                     showConfirmButton: false
                 }).then(() => {
                     navigate('/home');

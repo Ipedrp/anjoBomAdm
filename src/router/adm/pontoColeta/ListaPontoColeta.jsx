@@ -263,7 +263,6 @@ function ListaPontoColeta() {
 
 
     const verMais = async (id) => {
-        const token = 'seu_token_aqui';
         try {
             const response = await axios.get('https://apianjobom.victordev.shop/coletas/buscarPontosDeColeta', {
                 headers: { Authorization: token },

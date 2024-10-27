@@ -55,6 +55,10 @@
     color: #fff !important;
 }
 
+.login-ok p{
+    color: #003762;
+}
+
 /* Estilos específicos para mobile */
 @media (max-width: 767px) {
     .login-grid{
