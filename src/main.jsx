@@ -12,6 +12,7 @@ import CriarPontoColeta from './router/adm/pontoColeta/CriarPontoColeta.jsx'
 import ListaDoacoesRetirar from './router/adm/doacoes/ListaDoacoesRetirar.jsx'
 import Prioridade from './router/adm/doacoes/prioridade/Prioridade.jsx'
 import EditarPrioridade from './router/adm/doacoes/prioridade/editPrioridade/EditarPrioridade.jsx'
+import DetalhePontoColeta from './router/adm/pontoColeta/DetalhePontoColeta.jsx'
 const router = createBrowserRouter([
   {
     path: '/',
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
       {
         path: '/listaPontoColeta',
         element: <ListaPontoColeta/>,
+      },
+      {
+        path: '/detalhePontoColeta/:id',
+        element: <DetalhePontoColeta/>,
       },
       {
         path: '/criarPontoColeta',

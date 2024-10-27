@@ -83,10 +83,47 @@ tr:nth-child(even) td {
     position: relative;
 }
 
-.salvarAtualizacao{
+.salvarAtualizacao {
     background-color: #878716 !important;
     color: #fff !important;
 }
+
+/* 
+alert */
+
+/* CustomSweetAlert.css */
+
+.swal2-title {
+    font-size: 1.5em; /* Tamanho da fonte do título */
+    color: #0056b3; /* Cor do título */
+}
+
+/* CustomSweetAlert.css */
+
+.ponto-coleta-details p {
+    font-size: 1.1em; /* Tamanho da fonte do conteúdo */
+    color: #56616d; /* Cor do texto */
+    text-align: justify;
+    margin: 5px 0; /* Margem entre os parágrafos */
+}
+
+.ponto-coleta-details span{
+    color: #0056b3;
+    font-weight: 600;
+}
+
+
+.swal2-confirm {
+    background-color: #0056b3; /* Cor de fundo do botão */
+    color: white; /* Cor do texto do botão */
+    border: none; /* Sem borda */
+}
+
+.swal2-confirm:hover {
+    background-color: #0056b3; /* Cor ao passar o mouse */
+}
+
+
 
 /* Estilo para versão mobile */
 @media (max-width: 768px) {
@@ -129,7 +166,7 @@ tr:nth-child(even) td {
         font-size: 16px;
     }
 
-    .table-row-listaPontoColeta  {
+    .table-row-listaPontoColeta {
         background-color: #135F99 !important;
         color: #fff !important;
     }

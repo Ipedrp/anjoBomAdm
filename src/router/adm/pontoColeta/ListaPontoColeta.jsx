@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button, Table, Icon, Menu, MenuItem, Form, Input, FormInput, FormGroup } from 'semantic-ui-react';
 import { Link } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import NavbarAcoes from "../../../components/navbarAcoes/NavbarAcoes";
 import Header from "../../../components/header/Header";
 import axios from "axios";
@@ -252,6 +253,61 @@ function ListaPontoColeta() {
 
     //Fim área de Edição
 
+    // const navigate = useNavigate();
+
+    // const verMais = (id) => {
+    //     navigate(`/detalhePontoColeta/${id}`);
+    // };
+
+    // //fim metodo ver mais
+
+
+    const verMais = async (id) => {
+        const token = 'seu_token_aqui';
+        try {
+            const response = await axios.get('https://apianjobom.victordev.shop/coletas/buscarPontosDeColeta', {
+                headers: { Authorization: token },
+            });
+
+            const ponto = response.data.find((ponto) => ponto.id === id);
+
+            if (ponto) {
+                Swal.fire({
+                    title: `${ponto.name}`,
+                    html: `  
+                        <div class="ponto-coleta-details">
+                            <p> <span>CEP:</span> ${ponto.address.cep}</p>
+                            <p><span>Cidade:</span> ${ponto.address.cidade}</p>
+                            <p><span>Rua:</span> ${ponto.address.rua}</p>
+                            <p><span>Estado:</span> ${ponto.address.estado}</p>
+                            <p><span>Bairro:</span> ${ponto.address.bairro}</p>
+                            <p><span>Número:</span> ${ponto.address.numero}</p>
+                            <p><span>UrlMap:</span> ${ponto.urlMap}</p>
+                        </div>
+                    `,
+                    confirmButtonText: 'Fechar',
+                    background: '#f0f0f0',
+                    padding: '20px',
+                });
+            } else {
+                Swal.fire({
+                    title: 'Ponto de Coleta não encontrado',
+                    icon: 'error',
+                    confirmButtonText: 'Fechar',
+                });
+            }
+        } catch (error) {
+            console.error("Erro ao buscar pontos de coleta", error);
+            Swal.fire({
+                title: 'Erro ao buscar dados',
+                text: 'Não foi possível carregar os detalhes.',
+                icon: 'error',
+                confirmButtonText: 'Fechar',
+            });
+        }
+    };
+
+
     const indexUltimoItem = paginaAtual * itensPorPagina;
     const indexPrimeiroItem = indexUltimoItem - itensPorPagina;
     const pontoColetaPaginaAtual = pontos.slice(indexPrimeiroItem, indexUltimoItem);
@@ -363,6 +419,14 @@ function ListaPontoColeta() {
                                                     size="large"
                                                     onClick={() => confirmarDelecao(ponto.id)}
                                                     style={{ cursor: 'pointer' }} />
+                                                <Icon
+                                                    name="eye"
+                                                    color="blue"
+                                                    size="large"
+                                                    onClick={() => verMais(ponto.id)}
+                                                    style={{ cursor: 'pointer' }} />
+
+
                                             </Table.Cell>
                                         </Table.Row>
                                     ))}
