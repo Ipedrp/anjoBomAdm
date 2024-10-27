@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Table, Icon, Menu, MenuItem, Form, Input, FormInput } from 'semantic-ui-react';
+import { Button, Table, Icon, Menu, MenuItem, Form, Input, FormInput, FormGroup } from 'semantic-ui-react';
 import { Link } from "react-router-dom";
 import NavbarAcoes from "../../../components/navbarAcoes/NavbarAcoes";
 import Header from "../../../components/header/Header";
@@ -106,7 +106,6 @@ function ListaPontoColeta() {
 
 
     const validateCep = async (value) => {
-        
         try {
             const response = await axios.get(`https://viacep.com.br/ws/${value}/json/`);
             if (response.data && !response.data.erro) {
@@ -121,14 +120,28 @@ function ListaPontoColeta() {
                         estado: response.data.uf,
                     },
                 }));
-                console.log(""); // Limpa o erro se for válido
+                // Limpa o erro do CEP se for válido
+                setErros((prevErros) => {
+                    const { cep, ...restErros } = prevErros;
+                    return restErros;
+                });
             } else {
-                console.log("CEP inválido"); // Atualiza o erro se o CEP for inválido
+                // Atualiza o erro se o CEP for inválido
+                setErros((prevErros) => ({
+                    ...prevErros,
+                    cep: "CEP inválido, por favor verifique.",
+                }));
             }
         } catch (error) {
             console.error("Erro ao buscar o CEP:", error);
+            // Opcional: exibir uma mensagem de erro geral se a busca falhar
+            setErros((prevErros) => ({
+                ...prevErros,
+                cep: "Erro ao validar o CEP. Tente novamente mais tarde.",
+            }));
         }
     };
+
 
 
     // Função para carregar os dados do ponto de coleta no formulário
@@ -161,23 +174,55 @@ function ListaPontoColeta() {
 
     // Função para enviar o formulário editado
     const enviarEdicao = async () => {
-
-
-        const { name, cep, estado } = formCriarPontoColeta;
+        const { name, urlMap, address } = formCriarPontoColeta;
+        const { cep, estado, cidade, bairro, rua, numero } = address;
         let encontrouErros = false;
         const novosErros = {};
 
+        // Validação dos campos
         if (name.trim() === '') {
             novosErros.name = 'Nome do ponto de coleta é obrigatório';
             encontrouErros = true;
         }
-        if (cep.length < 9) {
+        if (cep.trim() === '') {
+            novosErros.cep = 'CEP é obrigatório';
+            encontrouErros = true;
+        } else if (cep.length < 9) {
             novosErros.cep = 'CEP inválido, deve conter 9 caracteres';
             encontrouErros = true;
         }
         if (estado.trim() === '') {
             novosErros.estado = 'O estado é obrigatório';
             encontrouErros = true;
+        }
+        if (cidade.trim() === '') {
+            novosErros.cidade = 'A cidade é obrigatória';
+            encontrouErros = true;
+        }
+        if (bairro.trim() === '') {
+            novosErros.bairro = 'O bairro é obrigatório';
+            encontrouErros = true;
+        }
+        if (rua.trim() === '') {
+            novosErros.rua = 'A rua é obrigatória';
+            encontrouErros = true;
+        }
+        if (numero.trim() === '') {
+            novosErros.numero = 'O número é obrigatório';
+            encontrouErros = true;
+        }
+        if (urlMap.trim() === '') {
+            novosErros.urlMap = 'A URL do mapa é obrigatória';
+            encontrouErros = true;
+        }
+
+        // Verifica e valida o CEP antes de enviar
+        await validateCep(formCriarPontoColeta.address.cep);
+
+        // Checa se o campo CEP possui erro
+        if (erros.cep) {
+            console.log("Erro ao atualizar: CEP inválido.");
+            return; // Interrompe o envio se o CEP for inválido
         }
 
         if (encontrouErros) {
@@ -186,19 +231,24 @@ function ListaPontoColeta() {
         }
 
         // Se não houver erros, continue com o envio
-        // Sua lógica de envio...
         try {
-            await axios.put(`https://apianjobom.victordev.shop/admin/editarPontoDeColeta/${pontoParaEditar.id}`, formCriarPontoColeta, {
+            await axios.put(`https://apianjobom.victordev.shop/admin/atualizarPontoDeColeta/${pontoParaEditar.id}`, formCriarPontoColeta, {
                 headers: { Authorization: token }
+            });
+            Swal.fire({
+                icon: 'success',
+                title: 'Atualizado!',
+                text: 'O ponto de coleta foi atualizado.',
+                timer: 1300,
+                showConfirmButton: false
             });
             fetchPontos();
             setEditando(false); // Volta para a tabela
         } catch (error) {
             console.error('Erro ao editar o ponto de coleta:', error);
         }
-
-
     };
+
 
     //Fim área de Edição
 
@@ -377,213 +427,233 @@ function ListaPontoColeta() {
                 ) : (
                     // Formulário de Edição
                     <div className="form-container-criarPontoColeta">
-                        <Form>
-                            {/* Nome do Ponto de Coleta */}
-                            <FormInput
-                                label={<label className="blue-label-criarPontoColeta">Nome do Ponto de Coleta</label>}
-                                value={formCriarPontoColeta.name}
-                                maxLength={70} // Limite máximo de 50 caracteres
-                                error={erros.name ? { content: erros.name } : undefined} // Exibe o erro se houver
-                                onChange={(e) => {
-                                    const novoNome = e.target.value;
-                                    setFormCriarPontoColeta({ ...formCriarPontoColeta, name: novoNome });
+                        <div className="input-area-criarPontoColeta">
+                            <Form>
+                                {/* Nome do Ponto de Coleta */}
+                                <FormInput
+                                    fluid
+                                    label={<label className="blue-label-criarPontoColeta">Nome do Ponto de Coleta</label>}
+                                    value={formCriarPontoColeta.name}
+                                    maxLength={70} // Limite máximo de 50 caracteres
+                                    error={erros.name ? { content: erros.name } : undefined} // Exibe o erro se houver
+                                    onChange={(e) => {
+                                        const novoNome = e.target.value;
+                                        setFormCriarPontoColeta({ ...formCriarPontoColeta, name: novoNome });
 
-                                    // Validação: o nome não pode estar vazio
-                                    if (novoNome.trim() === '') {
-                                        setErros({ ...erros, name: 'Nome do ponto de coleta é obrigatório' });
-                                    } else if (novoNome.length > 69) {
-                                        setErros({ ...erros, name: 'Nome deve ter no máximo 70 caracteres' });
-                                    } else {
-                                        const { name, ...restErros } = erros;
-                                        setErros(restErros); // Remove o erro do nome se o valor for válido
-                                    }
-                                }}
-                            />
+                                        // Validação: o nome não pode estar vazio
+                                        if (novoNome.trim() === '') {
+                                            setErros({ ...erros, name: 'Nome do ponto de coleta é obrigatório' });
+                                        } else if (novoNome.length > 69) {
+                                            setErros({ ...erros, name: 'Nome deve ter no máximo 70 caracteres' });
+                                        } else {
+                                            const { name, ...restErros } = erros;
+                                            setErros(restErros); // Remove o erro do nome se o valor for válido
+                                        }
+                                    }}
+                                />
 
-                            {/* CEP */}
-                            <FormInput
-                                label={<label className="blue-label-criarPontoColeta">CEP</label>}
-                                maxLength={9} // Limita para 9 caracteres (99999-999)
-                                value={formCriarPontoColeta.address.cep}
-                                error={erros.cep ? { content: erros.cep } : undefined} // Exibe o erro se houver
-                                onChange={(e) => {
-                                    const cepComMascara = formatCEP(e.target.value);
-                                    setFormCriarPontoColeta({
-                                        ...formCriarPontoColeta,
-                                        address: { ...formCriarPontoColeta.address, cep: cepComMascara }
-                                    });
+                                {/* URL do Mapa */}
+                                <FormInput
+                                    fluid
+                                    label={<label className="blue-label-criarPontoColeta">URL do Mapa</label>}
+                                    value={formCriarPontoColeta.urlMap}
+                                    maxLength={255}
+                                    error={erros.urlMap ? { content: erros.urlMap } : undefined} // Exibe o erro se houver
+                                    onChange={(e) => {
+                                        const novaUrlMap = e.target.value;
+                                        setFormCriarPontoColeta({
+                                            ...formCriarPontoColeta,
+                                            urlMap: novaUrlMap
+                                        });
 
-                                    // Validação: o CEP precisa ter 9 caracteres
-                                    if (cepComMascara.length < 9) {
-                                        setErros({ ...erros, cep: 'CEP inválido, deve conter 9 caracteres' });
-                                    } else {
-                                        const { cep, ...restErros } = erros;
-                                        setErros(restErros); // Remove o erro do CEP se for válido
-                                    }
+                                        // Validação: a URL não pode estar vazia
+                                        if (novaUrlMap.trim() === '') {
+                                            setErros({ ...erros, urlMap: 'A URL do mapa é obrigatória' });
+                                        } else if (novaUrlMap.length > 254) {
+                                            setErros({ ...erros, urlMap: 'A URL do mapa deve ter no máximo 255 caracteres' });
+                                        } else {
+                                            const { urlMap, ...restErros } = erros;
+                                            setErros(restErros); // Remove o erro da URL se o valor for válido
+                                        }
+                                    }}
+                                />
 
-                                    // Se o CEP estiver completo, faça a validação extra
-                                    if (cepComMascara.length === 9) {
-                                        validateCep(cepComMascara);
-                                    }
-                                }}
-                            />
+                                {/* CEP */}
+                                <FormInput
+                                    fluid
+                                    label={<label className="blue-label-criarPontoColeta">CEP</label>}
+                                    maxLength={9} // Limita para 9 caracteres (99999-999)
+                                    value={formCriarPontoColeta.address.cep}
+                                    error={erros.cep ? { content: erros.cep } : undefined} // Exibe o erro se houver
+                                    onChange={(e) => {
+                                        const cepComMascara = formatCEP(e.target.value);
+                                        setFormCriarPontoColeta({
+                                            ...formCriarPontoColeta,
+                                            address: { ...formCriarPontoColeta.address, cep: cepComMascara }
+                                        });
 
-                            {/* Estado */}
-                            <FormInput
-                                label={<label className="blue-label-criarPontoColeta">Estado</label>}
-                                value={formCriarPontoColeta.address.estado}
-                                maxLength={2} 
-                                error={erros.estado ? { content: erros.estado } : undefined} // Exibe o erro se houver
-                                onChange={(e) => {
-                                    const novoEstado = e.target.value.toUpperCase(); // Convertendo para maiúsculo
-                                    setFormCriarPontoColeta({
-                                        ...formCriarPontoColeta,
-                                        address: { ...formCriarPontoColeta.address, estado: novoEstado }
-                                    });
+                                        // Validação: o CEP precisa ter 9 caracteres
+                                        if (cepComMascara.length < 9) {
+                                            setErros({ ...erros, cep: 'CEP inválido, deve conter 9 caracteres' });
+                                        } else {
+                                            const { cep, ...restErros } = erros;
+                                            setErros(restErros); // Remove o erro do CEP se for válido
+                                        }
 
-                                    // Validação: o estado não pode estar vazio
-                                    if (novoEstado.trim() === '') {
-                                        setErros({ ...erros, estado: 'O estado é obrigatório' });
-                                    } else if (novoEstado.length > 2) {
-                                        setErros({ ...erros, estado: 'O estado deve ter no máximo 2 caracteres' });
-                                    } else {
-                                        const { estado, ...restErros } = erros;
-                                        setErros(restErros); // Remove o erro do estado se o valor for válido
-                                    }
-                                }}
-                            />
+                                        // Se o CEP estiver completo, faça a validação extra
+                                        if (cepComMascara.length === 9) {
+                                            validateCep(cepComMascara);
+                                        }
+                                    }}
+                                />
 
-                            {/* Cidade */}
-                            <FormInput
-                                label={<label className="blue-label-criarPontoColeta">Cidade</label>}
-                                maxLength={50}
-                                value={formCriarPontoColeta.address.cidade}
-                                error={erros.cidade ? { content: erros.cidade } : undefined} // Exibe o erro se houver
-                                onChange={(e) => {
-                                    const novaCidade = e.target.value;
-                                    setFormCriarPontoColeta({
-                                        ...formCriarPontoColeta,
-                                        address: { ...formCriarPontoColeta.address, cidade: novaCidade }
-                                    });
+                                <FormGroup widths="equal">
 
-                                    // Validação: a cidade não pode estar vazia
-                                    if (novaCidade.trim() === '') {
-                                        setErros({ ...erros, cidade: 'A cidade é obrigatória' });
-                                    } else if (novaCidade.length > 49) {
-                                        setErros({ ...erros, cidade: 'A cidade deve ter no máximo 50 caracteres' });
-                                    } else {
-                                        const { cidade, ...restErros } = erros;
-                                        setErros(restErros); // Remove o erro da cidade se o valor for válido
-                                    }
-                                }}
-                            />
+                                    {/* Estado */}
+                                    <FormInput
+                                        fluid
+                                        label={<label className="blue-label-criarPontoColeta">Estado</label>}
+                                        value={formCriarPontoColeta.address.estado}
+                                        maxLength={2}
+                                        error={erros.estado ? { content: erros.estado } : undefined} // Exibe o erro se houver
+                                        onChange={(e) => {
+                                            const novoEstado = e.target.value.toUpperCase(); // Convertendo para maiúsculo
+                                            setFormCriarPontoColeta({
+                                                ...formCriarPontoColeta,
+                                                address: { ...formCriarPontoColeta.address, estado: novoEstado }
+                                            });
 
-                            {/* Bairro */}
-                            <FormInput
-                                label={<label className="blue-label-criarPontoColeta">Bairro</label>}
-                                maxLength={50} 
-                                value={formCriarPontoColeta.address.bairro}
-                                error={erros.bairro ? { content: erros.bairro } : undefined} // Exibe o erro se houver
-                                onChange={(e) => {
-                                    const novoBairro = e.target.value;
-                                    setFormCriarPontoColeta({
-                                        ...formCriarPontoColeta,
-                                        address: { ...formCriarPontoColeta.address, bairro: novoBairro }
-                                    });
+                                            // Validação: o estado não pode estar vazio
+                                            if (novoEstado.trim() === '') {
+                                                setErros({ ...erros, estado: 'O estado é obrigatório' });
+                                            } else if (novoEstado.length > 2) {
+                                                setErros({ ...erros, estado: 'O estado deve ter no máximo 2 caracteres' });
+                                            } else {
+                                                const { estado, ...restErros } = erros;
+                                                setErros(restErros); // Remove o erro do estado se o valor for válido
+                                            }
+                                        }}
+                                    />
 
-                                    // Validação: o bairro não pode estar vazio
-                                    if (novoBairro.trim() === '') {
-                                        setErros({ ...erros, bairro: 'O bairro é obrigatório' });
-                                    } else if (novoBairro.length > 49) {
-                                        setErros({ ...erros, bairro: 'O bairro deve ter no máximo 50 caracteres' });
-                                    } else {
-                                        const { bairro, ...restErros } = erros;
-                                        setErros(restErros); // Remove o erro do bairro se o valor for válido
-                                    }
-                                }}
-                            />
+                                    {/* Cidade */}
+                                    <FormInput
+                                        fluid
+                                        label={<label className="blue-label-criarPontoColeta">Cidade</label>}
+                                        maxLength={50}
+                                        value={formCriarPontoColeta.address.cidade}
+                                        error={erros.cidade ? { content: erros.cidade } : undefined} // Exibe o erro se houver
+                                        onChange={(e) => {
+                                            const novaCidade = e.target.value;
+                                            setFormCriarPontoColeta({
+                                                ...formCriarPontoColeta,
+                                                address: { ...formCriarPontoColeta.address, cidade: novaCidade }
+                                            });
 
-                            {/* Rua */}
-                            <FormInput
-                                label={<label className="blue-label-criarPontoColeta">Rua</label>}
-                                maxLength={50} 
-                                value={formCriarPontoColeta.address.rua}
-                                error={erros.rua ? { content: erros.rua } : undefined} // Exibe o erro se houver
-                                onChange={(e) => {
-                                    const novaRua = e.target.value;
-                                    setFormCriarPontoColeta({
-                                        ...formCriarPontoColeta,
-                                        address: { ...formCriarPontoColeta.address, rua: novaRua }
-                                    });
+                                            // Validação: a cidade não pode estar vazia
+                                            if (novaCidade.trim() === '') {
+                                                setErros({ ...erros, cidade: 'A cidade é obrigatória' });
+                                            } else if (novaCidade.length > 49) {
+                                                setErros({ ...erros, cidade: 'A cidade deve ter no máximo 50 caracteres' });
+                                            } else {
+                                                const { cidade, ...restErros } = erros;
+                                                setErros(restErros); // Remove o erro da cidade se o valor for válido
+                                            }
+                                        }}
+                                    />
 
-                                    // Validação: a rua não pode estar vazia
-                                    if (novaRua.trim() === '') {
-                                        setErros({ ...erros, rua: 'A rua é obrigatória' });
-                                    } else if (novaRua.length > 49) {
-                                        setErros({ ...erros, rua: 'A rua deve ter no máximo 50 caracteres' });
-                                    } else {
-                                        const { rua, ...restErros } = erros;
-                                        setErros(restErros); // Remove o erro da rua se o valor for válido
-                                    }
-                                }}
-                            />
+                                    {/* Bairro */}
+                                    <FormInput
+                                        fluid
+                                        label={<label className="blue-label-criarPontoColeta">Bairro</label>}
+                                        maxLength={50}
+                                        value={formCriarPontoColeta.address.bairro}
+                                        error={erros.bairro ? { content: erros.bairro } : undefined} // Exibe o erro se houver
+                                        onChange={(e) => {
+                                            const novoBairro = e.target.value;
+                                            setFormCriarPontoColeta({
+                                                ...formCriarPontoColeta,
+                                                address: { ...formCriarPontoColeta.address, bairro: novoBairro }
+                                            });
 
-                            {/* Número */}
-                            <FormInput
-                                label={<label className="blue-label-criarPontoColeta">Número</label>}
-                                value={formCriarPontoColeta.address.numero}
-                                maxLength={6} 
-                                error={erros.numero ? { content: erros.numero } : undefined} // Exibe o erro se houver
-                                onChange={(e) => {
-                                    const novoNumero = e.target.value;
-                                    setFormCriarPontoColeta({
-                                        ...formCriarPontoColeta,
-                                        address: { ...formCriarPontoColeta.address, numero: novoNumero }
-                                    });
+                                            // Validação: o bairro não pode estar vazio
+                                            if (novoBairro.trim() === '') {
+                                                setErros({ ...erros, bairro: 'O bairro é obrigatório' });
+                                            } else if (novoBairro.length > 49) {
+                                                setErros({ ...erros, bairro: 'O bairro deve ter no máximo 50 caracteres' });
+                                            } else {
+                                                const { bairro, ...restErros } = erros;
+                                                setErros(restErros); // Remove o erro do bairro se o valor for válido
+                                            }
+                                        }}
+                                    />
+                                </FormGroup>
 
-                                    // Validação: o número não pode estar vazio
-                                    if (novoNumero.trim() === '') {
-                                        setErros({ ...erros, numero: 'O número é obrigatório' });
-                                    } else if (novoNumero.length > 6) {
-                                        setErros({ ...erros, numero: 'O número deve ter no máximo 6 caracteres' });
-                                    } else {
-                                        const { numero, ...restErros } = erros;
-                                        setErros(restErros); // Remove o erro do número se o valor for válido
-                                    }
-                                }}
-                            />
+                                <FormGroup widths="equal">
 
-                            {/* URL do Mapa */}
-                            <FormInput
-                                label={<label className="blue-label-criarPontoColeta">URL do Mapa</label>}
-                                value={formCriarPontoColeta.urlMap}
-                                maxLength={255} 
-                                error={erros.urlMap ? { content: erros.urlMap } : undefined} // Exibe o erro se houver
-                                onChange={(e) => {
-                                    const novaUrlMap = e.target.value;
-                                    setFormCriarPontoColeta({
-                                        ...formCriarPontoColeta,
-                                        urlMap: novaUrlMap
-                                    });
 
-                                    // Validação: a URL não pode estar vazia
-                                    if (novaUrlMap.trim() === '') {
-                                        setErros({ ...erros, urlMap: 'A URL do mapa é obrigatória' });
-                                    } else if (novaUrlMap.length > 254) {
-                                        setErros({ ...erros, urlMap: 'A URL do mapa deve ter no máximo 255 caracteres' });
-                                    } else {
-                                        const { urlMap, ...restErros } = erros;
-                                        setErros(restErros); // Remove o erro da URL se o valor for válido
-                                    }
-                                }}
-                            />
+                                    {/* Rua */}
+                                    <FormInput
+                                        fluid
+                                        label={<label className="blue-label-criarPontoColeta">Rua</label>}
+                                        maxLength={50}
+                                        value={formCriarPontoColeta.address.rua}
+                                        error={erros.rua ? { content: erros.rua } : undefined} // Exibe o erro se houver
+                                        onChange={(e) => {
+                                            const novaRua = e.target.value;
+                                            setFormCriarPontoColeta({
+                                                ...formCriarPontoColeta,
+                                                address: { ...formCriarPontoColeta.address, rua: novaRua }
+                                            });
 
-                            {/* Botões de ação */}
-                            <div className="container-acoes-btnc-ataualizarPontoColeta">
-                                <Button type="button" color="red" onClick={cancelarEdicao}>Cancelar</Button>
-                                <Button type="submit" className="salvarAtualizacao" onClick={enviarEdicao}>Salvar atualização</Button>
-                            </div>
-                        </Form>
+                                            // Validação: a rua não pode estar vazia
+                                            if (novaRua.trim() === '') {
+                                                setErros({ ...erros, rua: 'A rua é obrigatória' });
+                                            } else if (novaRua.length > 49) {
+                                                setErros({ ...erros, rua: 'A rua deve ter no máximo 50 caracteres' });
+                                            } else {
+                                                const { rua, ...restErros } = erros;
+                                                setErros(restErros); // Remove o erro da rua se o valor for válido
+                                            }
+                                        }}
+                                    />
+
+                                    {/* Número */}
+                                    <FormInput
+                                        fluid
+                                        label={<label className="blue-label-criarPontoColeta">Número</label>}
+                                        value={formCriarPontoColeta.address.numero}
+                                        maxLength={6}
+                                        error={erros.numero ? { content: erros.numero } : undefined} // Exibe o erro se houver
+                                        onChange={(e) => {
+                                            const novoNumero = e.target.value;
+                                            setFormCriarPontoColeta({
+                                                ...formCriarPontoColeta,
+                                                address: { ...formCriarPontoColeta.address, numero: novoNumero }
+                                            });
+
+                                            // Validação: o número não pode estar vazio
+                                            if (novoNumero.trim() === '') {
+                                                setErros({ ...erros, numero: 'O número é obrigatório' });
+                                            } else if (novoNumero.length > 6) {
+                                                setErros({ ...erros, numero: 'O número deve ter no máximo 6 caracteres' });
+                                            } else {
+                                                const { numero, ...restErros } = erros;
+                                                setErros(restErros); // Remove o erro do número se o valor for válido
+                                            }
+                                        }}
+                                    />
+                                </FormGroup>
+
+
+
+
+                            </Form>
+                        </div>
+                        {/* Botões de ação */}
+                        <div className="container-acoes-btnc-criarPontoColeta">
+                            <Button type="button" color="red" onClick={cancelarEdicao}>Cancelar</Button>
+                            <Button type="submit" className="salvarAtualizacao" onClick={enviarEdicao}>Salvar atualização</Button>
+                        </div>
 
 
                     </div>

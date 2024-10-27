@@ -256,8 +256,8 @@ const CriarPontoColeta = () => {
 
                     }
                 });
-                localStorage.setItem('authorization', response.data.token)
-                console.log(response.data.token)
+
+                // console.log(response.data.token)
 
                 // Exibe o SweetAlert para sucesso
                 Swal.fire({
@@ -265,7 +265,7 @@ const CriarPontoColeta = () => {
                     text: "O ponto de coleta foi criado!",
                     icon: "success",
                     timer: 1300,
-                    showConfirmButton: false               
+                    showConfirmButton: false
 
                 });
                 console.log('Resposta do servidor:', response.data);
@@ -281,7 +281,7 @@ const CriarPontoColeta = () => {
                         bairro: '',
                         rua: '',
                         numero: '',
-    
+
                     },
                     data_inicio: new Date().toISOString(),
                     data_fim: new Date().toISOString(),
@@ -312,27 +312,6 @@ const CriarPontoColeta = () => {
             }
         }
 
-
-        // if (valid) {
-
-        //     //Adiciona os dados ao array sem o campo id
-        //     setDataArray((prevArray) => [...prevArray, { ...formCriarPontoColeta }]);
-
-        //     // Limpa o formulário
-        //     formCriarPontoColeta({
-        //         name: '',
-        //         urlMap: '',
-        //         address: {
-        //             cep: '',
-        //             estado: '',
-        //             cidade: '',
-        //             bairro: '',
-        //             rua: '',
-        //             numero: ''
-        //         }
-        //     });
-        // }
-
         // Atualiza os erros
         setErros(newErros);
     }
@@ -342,100 +321,102 @@ const CriarPontoColeta = () => {
             <NavbarAcoes />
             <Header title1={"Ponto de"} title2={"Coleta"} />
             <div className="form-container-criarPontoColeta">
-                <Form>
-                    <FormInput
-                        fluid
-                        error={erros.name ? { content: erros.name } : null}
-                        label={<label className="blue-label-criarPontoColeta">Nome do Ponto de Coleta</label>}
-                        placeholder="Digite o nome do ponto de coleta"
-                        name="name"
-                        type="text"
-                        maxLength={70}
-                        value={formCriarPontoColeta.name}
-                        onChange={handleChange}
-                    />
-                    <FormInput
-                        fluid
-                        error={erros.urlMap ? { content: erros.urlMap } : null}
-                        label={<label className="blue-label-criarPontoColeta">URL do Mapa</label>}
-                        placeholder="Insira a URL do mapa"
-                        name="urlMap"
-                        type="text"
-                        maxLength={255}
-                        value={formCriarPontoColeta.urlMap}
-                        onChange={handleChange}
-                    />
-                    <FormInput
-                        fluid
-                        error={!!errorCep || (erros.address && erros.address.cep) ? { content: errorCep || erros.address.cep } : null}
-                        label={<label className="blue-label-criarPontoColeta">CEP</label>}
-                        placeholder="Digite o CEP"
-                        name="address.cep"
-                        type="text"
-                        maxLength={9}
-                        value={formCriarPontoColeta.address.cep}
-                        onChange={handleChange}
-                    />
-                    <FormGroup widths="equal">
+                <div className="input-area-criarPontoColeta">
+                    <Form>
                         <FormInput
                             fluid
-                            error={!!(erros.address && erros.address.estado) && { content: erros.address.estado }}
-                            label={<label className="blue-label-criarPontoColeta">Estado</label>}
-                            placeholder="Digite o estado"
-                            name="address.estado"
+                            error={erros.name ? { content: erros.name } : null}
+                            label={<label className="blue-label-criarPontoColeta">Nome do Ponto de Coleta</label>}
+                            placeholder="Digite o nome do ponto de coleta"
+                            name="name"
                             type="text"
-                            maxLength={2}
-                            value={formCriarPontoColeta.address.estado}
+                            maxLength={70}
+                            value={formCriarPontoColeta.name}
                             onChange={handleChange}
                         />
                         <FormInput
                             fluid
-                            error={!!(erros.address && erros.address.cidade) && { content: erros.address.cidade }}
-                            label={<label className="blue-label-criarPontoColeta">Cidade</label>}
-                            placeholder="Digite a cidade"
-                            name="address.cidade"
+                            error={erros.urlMap ? { content: erros.urlMap } : null}
+                            label={<label className="blue-label-criarPontoColeta">URL do Mapa</label>}
+                            placeholder="Insira a URL do mapa"
+                            name="urlMap"
                             type="text"
-                            maxLength={50}
-                            value={formCriarPontoColeta.address.cidade}
+                            maxLength={255}
+                            value={formCriarPontoColeta.urlMap}
                             onChange={handleChange}
                         />
                         <FormInput
                             fluid
-                            error={!!(erros.address && erros.address.bairro) && { content: erros.address.bairro }}
-                            label={<label className="blue-label-criarPontoColeta">Bairro</label>}
-                            placeholder="Digite o bairro"
-                            name="address.bairro"
+                            error={!!errorCep || (erros.address && erros.address.cep) ? { content: errorCep || erros.address.cep } : null}
+                            label={<label className="blue-label-criarPontoColeta">CEP</label>}
+                            placeholder="Digite o CEP"
+                            name="address.cep"
                             type="text"
-                            maxLength={50}
-                            value={formCriarPontoColeta.address.bairro}
+                            maxLength={9}
+                            value={formCriarPontoColeta.address.cep}
                             onChange={handleChange}
                         />
-                    </FormGroup>
-                    <FormGroup widths="equal">
-                        <FormInput
-                            fluid
-                            error={!!(erros.address && erros.address.rua) && { content: erros.address.rua }}
-                            label={<label className="blue-label-criarPontoColeta">Rua</label>}
-                            placeholder="Digite a rua"
-                            name="address.rua"
-                            type="text"
-                            maxLength={50}
-                            value={formCriarPontoColeta.address.rua}
-                            onChange={handleChange}
-                        />
-                        <FormInput
-                            fluid
-                            error={!!(erros.address && erros.address.numero) && { content: erros.address.numero }}
-                            label={<label className="blue-label-criarPontoColeta">Número</label>}
-                            placeholder="Digite o número"
-                            name="address.numero"
-                            type="text"
-                            maxLength={6}
-                            value={formCriarPontoColeta.address.numero}
-                            onChange={handleChange}
-                        />
-                    </FormGroup>
-                </Form>
+                        <FormGroup widths="equal">
+                            <FormInput
+                                fluid
+                                error={!!(erros.address && erros.address.estado) && { content: erros.address.estado }}
+                                label={<label className="blue-label-criarPontoColeta">Estado</label>}
+                                placeholder="Digite o estado"
+                                name="address.estado"
+                                type="text"
+                                maxLength={2}
+                                value={formCriarPontoColeta.address.estado}
+                                onChange={handleChange}
+                            />
+                            <FormInput
+                                fluid
+                                error={!!(erros.address && erros.address.cidade) && { content: erros.address.cidade }}
+                                label={<label className="blue-label-criarPontoColeta">Cidade</label>}
+                                placeholder="Digite a cidade"
+                                name="address.cidade"
+                                type="text"
+                                maxLength={50}
+                                value={formCriarPontoColeta.address.cidade}
+                                onChange={handleChange}
+                            />
+                            <FormInput
+                                fluid
+                                error={!!(erros.address && erros.address.bairro) && { content: erros.address.bairro }}
+                                label={<label className="blue-label-criarPontoColeta">Bairro</label>}
+                                placeholder="Digite o bairro"
+                                name="address.bairro"
+                                type="text"
+                                maxLength={50}
+                                value={formCriarPontoColeta.address.bairro}
+                                onChange={handleChange}
+                            />
+                        </FormGroup>
+                        <FormGroup widths="equal">
+                            <FormInput
+                                fluid
+                                error={!!(erros.address && erros.address.rua) && { content: erros.address.rua }}
+                                label={<label className="blue-label-criarPontoColeta">Rua</label>}
+                                placeholder="Digite a rua"
+                                name="address.rua"
+                                type="text"
+                                maxLength={50}
+                                value={formCriarPontoColeta.address.rua}
+                                onChange={handleChange}
+                            />
+                            <FormInput
+                                fluid
+                                error={!!(erros.address && erros.address.numero) && { content: erros.address.numero }}
+                                label={<label className="blue-label-criarPontoColeta">Número</label>}
+                                placeholder="Digite o número"
+                                name="address.numero"
+                                type="text"
+                                maxLength={6}
+                                value={formCriarPontoColeta.address.numero}
+                                onChange={handleChange}
+                            />
+                        </FormGroup>
+                    </Form>
+                </div>
                 <div className="container-acoes-btnc-criarPontoColeta">
                     <Link to="/listaPontoColeta">
                         <Button type="button" className="voltar">Voltar</Button>
@@ -443,6 +424,7 @@ const CriarPontoColeta = () => {
                     <Button type="button" className="criarPontoColeta" onClick={EnviarPontoColeta}>Criar Ponto de Coleta</Button>
                 </div>
             </div>
+
         </>
     )
 }
