@@ -10,9 +10,10 @@
     border-radius: 14px;
 }
 
-/* .uiii1{
-    border: 5px solid #1b7034 !important ;
-} */
+.ui.selection.dropdown {
+    min-width: unset !important;
+}
+
 
 .title-prioridade-2 {
     text-align: center;

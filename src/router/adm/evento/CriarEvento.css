@@ -49,3 +49,35 @@
     border:2px solid #135F99 !important;
 }
 
+@media (max-width: 770px) {
+    .form-container-criarEvento {
+        height: auto;
+        padding: 15px;
+        margin: 30px auto;
+    }
+
+    .input-area-criarEvento {
+        width: 100%;
+        gap: 10px;
+    }
+
+   
+    .blue-label-criarEvento {
+        font-size: 0.9em;
+    }
+
+    .form-container-criarEvento .field>.error {
+        font-size: 0.85em;
+        padding-top: 3px;
+        color: #D9534F;
+    }
+
+    .container-acoes-btnc-criarEvento {
+        display: flex;
+        justify-content: space-between !important;
+        width: 100%;
+        margin-top: 15px;
+    }
+
+
+}   

@@ -81,8 +81,14 @@ const Login = () => {
             } else if (error.response && error.response.status === 401) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Você realmente é um administrador da Anjo Bom?',
-                    text: 'Credenciais inválidas. Verifique seu email e senha.',
+                    title: 'Credenciais inválidas.',
+                    text: 'Você é um administrador da Anjo Bom?',
+                });
+            } else if (error.response && error.response.status === 404) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Credenciais inválidas.',
+                    text: 'Você é um administrador da Anjo Bom?',
                 });
             } else if (error.response && error.response.status === 500) {
                 Swal.fire({

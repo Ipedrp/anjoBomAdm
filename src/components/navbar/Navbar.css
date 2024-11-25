@@ -54,3 +54,6 @@
 .sidebar-adm{
     background-color: #10324B !important;
 }
+.ui.vertical.menu .item > i.icon {
+    margin: 0 !important; 
+}

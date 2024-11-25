@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Button, Table, Icon, Label, Menu, MenuItem, Form, Input, FormInput } from 'semantic-ui-react';
+import { Button, Table, Icon, Label, Menu, MenuItem, Form, FormGroup, FormInput, FormField, TextArea } from 'semantic-ui-react';
 import { Link } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import NavbarAcoes from "../../../components/navbarAcoes/NavbarAcoes";
 import Header from "../../../components/header/Header";
 import axios from "axios";
@@ -31,6 +32,8 @@ function ListaEvento() {
         // photos_event: [],
     });
 
+    // Estado para armazenar os arquivos selecionados
+    const [files, setFiles] = useState([]);
 
     const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
     const token = localStorage.getItem('authorization');
@@ -74,13 +77,11 @@ function ListaEvento() {
     const deletarEvento = async (id) => {
         // console.log("eventoDELETADO")
         try {
-            const response = await axios.delete(`https://apianjobom.victordev.shop/admin/deletarEvento/${id}`, {
+            await axios.delete(`https://apianjobom.victordev.shop/admin/deletarEvento/${id}`, {
                 headers: {
                     Authorization: token
                 }
             })
-            localStorage.setItem('authorization', response.data.token)
-            console.log(response.data, "essa é a resposta dessa porra")
             Swal.fire({
                 icon: 'success',
                 title: 'Deletado!',
@@ -91,7 +92,7 @@ function ListaEvento() {
             fetchEventos();
         } catch (error) {
             console.error('Erro ao deletar oEvento:', error);
-            fetchEventos();
+
         }
     }
 
@@ -112,6 +113,57 @@ function ListaEvento() {
             }
         });
     };
+
+    const verMais = async (id) => {
+        try {
+            const response = await axios.get('https://apianjobom.victordev.shop/eventos/', {
+                headers: { Authorization: token },
+            });
+
+            const evento = response.data.find((evento) => evento.id === id);
+
+            if (evento) {
+                // Gerando as imagens como tags HTML
+                const imagensHtml = evento.photosUrl.map(
+                    (url) => `<img src="${url}" alt="Imagem do evento" style="width: 100%; max-width: 100px; margin: 10px 0; border-radius: 5px;">`
+                ).join('');
+
+                Swal.fire({
+                    title: `${evento.titulo}`,
+                    html: `  
+                        <div class="evento-details">
+                            <p><span>CEP:</span> ${evento.address.cep}</p>
+                            <p><span>Cidade:</span> ${evento.address.cidade}</p>
+                            <p><span>Rua:</span> ${evento.address.rua}</p>
+                            <p><span>Estado:</span> ${evento.address.estado}</p>
+                            <p><span>Bairro:</span> ${evento.address.bairro}</p>
+                            <p><span>Número:</span> ${evento.address.numero}</p>
+                            <p><span>Descrição:</span> ${evento.descricao}</p>
+                            ${imagensHtml} <!-- Adicionando as imagens aqui -->
+                        </div>
+                    `,
+                    confirmButtonText: 'Fechar',
+                    background: '#f0f0f0',
+                    padding: '20px',
+                });
+            } else {
+                Swal.fire({
+                    title: 'Evento não encontrado',
+                    icon: 'error',
+                    confirmButtonText: 'Fechar',
+                });
+            }
+        } catch (error) {
+            console.error("Erro ao buscar evento", error);
+            Swal.fire({
+                title: 'Erro ao buscar dados',
+                text: 'Não foi possível carregar os detalhes.',
+                icon: 'error',
+                confirmButtonText: 'Fechar',
+            });
+        }
+    };
+
 
     //Área de Edição    
 
@@ -149,15 +201,14 @@ function ListaEvento() {
     };
 
 
-
-    // Função para carregar os dados do Evento no formulário
+    // Função para carregar os dados do Evento no formulário, incluindo imagens
     const handleEditarEvento = (evento) => {
         const cepFormatado = formatCEP(evento.address.cep);
+
+        // Atualiza o estado com os dados do evento e as imagens associadas
         setFormCriarEvento({
             titulo: evento.titulo,
             descricao: evento.descricao,
-            name: evento.name,
-            urlMap: evento.urlMap,
             address: {
                 cep: cepFormatado,
                 estado: evento.address.estado,
@@ -165,10 +216,17 @@ function ListaEvento() {
                 bairro: evento.address.bairro,
                 rua: evento.address.rua,
                 numero: evento.address.numero
-            }
+            },
+            data_inicio: evento.data_inicio,
+            data_fim: evento.data_fim,
         });
 
+        // Carrega as imagens existentes no estado `files`
+        setFiles(evento.imagens || []);
+
+        // Valida o CEP formatado
         validateCep(cepFormatado);
+
         setEventoParaEditar(evento);
         setEditando(true);
     };
@@ -180,51 +238,123 @@ function ListaEvento() {
         setErros('');
     };
 
+    // Adiciona novas imagens ao estado `files`
+    const handleAdicionarImagens = (event) => {
+        const novasImagens = Array.from(event.target.files);
+        setFiles([...files, ...novasImagens]);
+    };
+
+    // Remove uma imagem do estado `files` pelo índice
+    const handleRemoverImagem = (index) => {
+        const novasImagens = files.filter((_, i) => i !== index);
+        setFiles(novasImagens);
+    };
+
+
     // Função para enviar o formulário editado
     const enviarEdicao = async () => {
+        // const { titulo, descricao, address } = formCriarEvento;
+        // const { cep, estado, cidade, bairro, rua, numero } = address;
+        // let encontrouErros = false;
+        // const novosErros = {};
 
+        // // Validação dos campos
+        // if (titulo.trim() === '') {
+        //     novosErros.name = 'Título do evento é obrigatório';
+        //     encontrouErros = true;
+        // }
+        // if (descricao.trim() === '') {
+        //     novosErros.name = 'Descrição do evento é obrigatório';
+        //     encontrouErros = true;
+        // }
+        // if (cep.trim() === '') {
+        //     novosErros.cep = 'CEP é obrigatório';
+        //     encontrouErros = true;
+        // } else if (cep.length < 9) {
+        //     novosErros.cep = 'CEP inválido, deve conter 9 caracteres';
+        //     encontrouErros = true;
+        // }
+        // if (estado.trim() === '') {
+        //     novosErros.estado = 'O estado é obrigatório';
+        //     encontrouErros = true;
+        // }
+        // if (cidade.trim() === '') {
+        //     novosErros.cidade = 'A cidade é obrigatória';
+        //     encontrouErros = true;
+        // }
+        // if (bairro.trim() === '') {
+        //     novosErros.bairro = 'O bairro é obrigatório';
+        //     encontrouErros = true;
+        // }
+        // if (rua.trim() === '') {
+        //     novosErros.rua = 'A rua é obrigatória';
+        //     encontrouErros = true;
+        // }
+        // if (numero.trim() === '') {
+        //     novosErros.numero = 'O número é obrigatório';
+        //     encontrouErros = true;
+        // }
+        // if (urlMap.trim() === '') {
+        //     novosErros.urlMap = 'A URL do mapa é obrigatória';
+        //     encontrouErros = true;
+        // }
 
-        const { name, cep, estado } = formCriarEvento;
-        let encontrouErros = false;
-        const novosErros = {};
+        // // Verifica e valida o CEP antes de enviar
+        // await validateCep(formCriarEvento.address.cep);
 
-        if (name.trim() === '') {
-            novosErros.titulo = 'Título do evento é obrigatório';
-            encontrouErros = true;
-        }
-        if (cep.length < 9) {
-            novosErros.cep = 'CEP inválido, deve conter 9 caracteres';
-            encontrouErros = true;
-        }
-        if (estado.trim() === '') {
-            novosErros.estado = 'O estado é obrigatório';
-            encontrouErros = true;
-        }
+        // // Checa se o campo CEP possui erro
+        // if (erros.cep) {
+        //     console.log("Erro ao atualizar: CEP inválido.");
+        //     return; // Interrompe o envio se o CEP for inválido
+        // }
 
-        if (encontrouErros) {
-            setErros(novosErros);
-            return;
-        }
+        // if (encontrouErros) {
+        //     setErros(novosErros);
+        //     return;
+        // }
+
+        const formData = new FormData();
+
+        // Adding form data (text inputs)
+        formData.append('titulo', formCriarEvento.titulo);
+        formData.append('descricao', formCriarEvento.descricao);
+        formData.append('data_inicio', formCriarEvento.data_inicio);
+        formData.append('data_fim', formCriarEvento.data_fim);
+        formData.append('address', JSON.stringify(formCriarEvento.address)); // Convertendo o endereço para JSON
+
+        // Adicionando os arquivos ao FormData
+        files.forEach((file) => {
+            formData.append('photos_event', file);
+        });
+
 
         // Se não houver erros, continue com o envio
-        // Sua lógica de envio...
         try {
-            await axios.put(`https://apianjobom.victordev.shop/admin/editarPontoDeColeta/${eventoParaEditar.id}`, formCriarEvento, {
-                headers: { Authorization: token }
+            await axios.put(`https://apianjobom.victordev.shop/admin/atualizarPontoDeColeta/${eventoParaEditar.id}`, formCriarEvento, {
+                headers: {
+                    Authorization: token,
+                    "Content-Type": "multipart/form-data"
+                }
             });
-            fetchEventos();
+            Swal.fire({
+                icon: 'success',
+                title: 'Atualizado!',
+                text: 'O Evento foi atualizado.',
+                timer: 1300,
+                showConfirmButton: false
+            });
+            fetchPontos();
             setEditando(false); // Volta para a tabela
         } catch (error) {
-            console.error('Erro ao editar evento:', error);
+            console.error('Erro ao editar o evento:', error);
         }
-
-
     };
 
     //Fim área de Edição
 
 
     console.log("todos os evcento dessa buceta", allEventos)
+    console.log("img aqui ", files)
 
     const indexUltimoItem = paginaAtual * itensPorPagina;
     const indexPrimeiroItem = indexUltimoItem - itensPorPagina;
@@ -272,6 +402,12 @@ function ListaEvento() {
                                                 color="red"
                                                 size="large"
                                                 onClick={() => confirmarDelecao(evento.id)} />
+                                            <Icon
+                                                name="eye"
+                                                color="blue"
+                                                size="large"
+                                                onClick={() => verMais(evento.id)}
+                                                style={{ cursor: 'pointer' }} />
                                         </div>
                                     </div>
                                 ))}
@@ -337,13 +473,20 @@ function ListaEvento() {
                                                 />
                                                 <Icon name="trash alternate outline" color="red" size="large" onClick={() => confirmarDelecao(evento.id)}
                                                     style={{ cursor: 'pointer' }} />
+                                                <Icon
+                                                    name="eye"
+                                                    color="blue"
+                                                    size="large"
+                                                    onClick={() => verMais(evento.id)}
+                                                    style={{ cursor: 'pointer' }} />
                                             </Table.Cell>
                                         </Table.Row>
+
                                     ))}
                                     {/* Preencher linhas vazias */}
                                     {Array.from({ length: linhasExtras }).map((_, index) => (
                                         <Table.Row key={`extra-${index}`}>
-                                            <Table.Cell colSpan="" className="empty-row" />
+                                            <Table.Cell colSpan="4" className="empty-row" />
                                         </Table.Row>
                                     ))}
                                 </Table.Body>
@@ -374,7 +517,6 @@ function ListaEvento() {
                                                         {index + 1}
                                                     </MenuItem>
                                                 ))}
-
                                                 <MenuItem
                                                     as="a"
                                                     icon
@@ -398,221 +540,245 @@ function ListaEvento() {
 
                 ) : (
                     // Formulário de Edição
-                    <div className="form-container-criarPontoColeta">
-                        <Form>
-                            {/* Nome do Ponto de Coleta */}
-                            <FormInput
-                                label={<label className="blue-label-criarPontoColeta">Título do Evento</label>}
-                                value={formCriarEvento.titulo}
-                                maxLength={70} // Limite máximo de 50 caracteres
-                                error={erros.titulo ? { content: erros.titulo } : undefined} // Exibe o erro se houver
-                                onChange={(e) => {
-                                    const novoTitulo = e.target.value;
-                                    setFormCriarEvento({ ...formCriarEvento, titulo: novoTitulo });
+                    <div className="form-container-criarEvento">
+                        <div className="input-area-criarEvento">
+                            <Form>
+                                {/* Nome do Ponto de Coleta */}
+                                <FormInput
+                                    label={<label className="blue-label-criarPontoColeta">Título do Evento</label>}
+                                    value={formCriarEvento.titulo}
+                                    maxLength={70} // Limite máximo de 50 caracteres
+                                    error={erros.titulo ? { content: erros.titulo } : undefined} // Exibe o erro se houver
+                                    onChange={(e) => {
+                                        const novoTitulo = e.target.value;
+                                        setFormCriarEvento({ ...formCriarEvento, titulo: novoTitulo });
 
-                                    // Validação: o Título não pode estar vazio
-                                    if (novoTitulo.trim() === '') {
-                                        setErros({ ...erros, name: 'Título do Evento é obrigatório' });
-                                    } else if (novoTitulo.length > 69) {
-                                        setErros({ ...erros, name: 'Título deve ter no máximo 70 caracteres' });
-                                    } else {
-                                        const { titulo, ...restErros } = erros;
-                                        setErros(restErros); // Remove o erro do nome se o valor for válido
-                                    }
-                                }}
-                            />
+                                        // Validação: o Título não pode estar vazio
+                                        if (novoTitulo.trim() === '') {
+                                            setErros({ ...erros, name: 'Título do Evento é obrigatório' });
+                                        } else if (novoTitulo.length > 69) {
+                                            setErros({ ...erros, name: 'Título deve ter no máximo 70 caracteres' });
+                                        } else {
+                                            const { titulo, ...restErros } = erros;
+                                            setErros(restErros); // Remove o erro do nome se o valor for válido
+                                        }
+                                    }}
+                                />
+                                {/* CEP */}
+                                <FormInput
+                                    label={<label className="blue-label-criarPontoColeta">CEP</label>}
+                                    maxLength={9} // Limita para 9 caracteres (99999-999)
+                                    value={formCriarEvento.address.cep}
+                                    error={erros.cep ? { content: erros.cep } : undefined} // Exibe o erro se houver
+                                    onChange={(e) => {
+                                        const cepComMascara = formatCEP(e.target.value);
+                                        setFormCriarEvento({
+                                            ...formCriarEvento,
+                                            address: { ...formCriarEvento.address, cep: cepComMascara }
+                                        });
 
-                            {/* CEP */}
-                            <FormInput
-                                label={<label className="blue-label-criarPontoColeta">CEP</label>}
-                                maxLength={9} // Limita para 9 caracteres (99999-999)
-                                value={formCriarEvento.address.cep}
-                                error={erros.cep ? { content: erros.cep } : undefined} // Exibe o erro se houver
-                                onChange={(e) => {
-                                    const cepComMascara = formatCEP(e.target.value);
-                                    setFormCriarEvento({
-                                        ...formCriarEvento,
-                                        address: { ...formCriarEvento.address, cep: cepComMascara }
-                                    });
+                                        // Validação: o CEP precisa ter 9 caracteres
+                                        if (cepComMascara.length < 9) {
+                                            setErros({ ...erros, cep: 'CEP inválido, deve conter 9 caracteres' });
+                                        } else {
+                                            const { cep, ...restErros } = erros;
+                                            setErros(restErros); // Remove o erro do CEP se for válido
+                                        }
 
-                                    // Validação: o CEP precisa ter 9 caracteres
-                                    if (cepComMascara.length < 9) {
-                                        setErros({ ...erros, cep: 'CEP inválido, deve conter 9 caracteres' });
-                                    } else {
-                                        const { cep, ...restErros } = erros;
-                                        setErros(restErros); // Remove o erro do CEP se for válido
-                                    }
+                                        // Se o CEP estiver completo, faça a validação extra
+                                        if (cepComMascara.length === 9) {
+                                            validateCep(cepComMascara);
+                                        }
+                                    }}
+                                />
+                                <FormGroup widths="equal">
+                                    <FormInput
+                                        fluid
+                                        label={<label className="blue-label-criarPontoColeta">Estado</label>}
+                                        value={formCriarEvento.address.estado}
+                                        maxLength={2}
+                                        error={erros.estado ? { content: erros.estado } : undefined} // Exibe o erro se houver
+                                        onChange={(e) => {
+                                            const novoEstado = e.target.value.toUpperCase(); // Convertendo para maiúsculo
+                                            setFormCriarEvento({
+                                                ...formCriarEvento,
+                                                address: { ...formCriarEvento.address, estado: novoEstado }
+                                            });
+                                            // Validação: o estado não pode estar vazio
+                                            if (novoEstado.trim() === '') {
+                                                setErros({ ...erros, estado: 'O estado é obrigatório' });
+                                            } else if (novoEstado.length > 2) {
+                                                setErros({ ...erros, estado: 'O estado deve ter no máximo 2 caracteres' });
+                                            } else {
+                                                const { estado, ...restErros } = erros;
+                                                setErros(restErros); // Remove o erro do estado se o valor for válido
+                                            }
+                                        }}
+                                    />
+                                    <FormInput
+                                        fluid
+                                        label={<label className="blue-label-criarPontoColeta">Cidade</label>}
+                                        maxLength={50}
+                                        value={formCriarEvento.address.cidade}
+                                        error={erros.cidade ? { content: erros.cidade } : undefined} // Exibe o erro se houver
+                                        onChange={(e) => {
+                                            const novaCidade = e.target.value;
+                                            setFormCriarEvento({
+                                                ...formCriarEvento,
+                                                address: { ...formCriarEvento.address, cidade: novaCidade }
+                                            });
 
-                                    // Se o CEP estiver completo, faça a validação extra
-                                    if (cepComMascara.length === 9) {
-                                        validateCep(cepComMascara);
-                                    }
-                                }}
-                            />
+                                            // Validação: a cidade não pode estar vazia
+                                            if (novaCidade.trim() === '') {
+                                                setErros({ ...erros, cidade: 'A cidade é obrigatória' });
+                                            } else if (novaCidade.length > 49) {
+                                                setErros({ ...erros, cidade: 'A cidade deve ter no máximo 50 caracteres' });
+                                            } else {
+                                                const { cidade, ...restErros } = erros;
+                                                setErros(restErros); // Remove o erro da cidade se o valor for válido
+                                            }
+                                        }}
+                                    />
+                                    <FormInput
+                                        fluid
+                                        label={<label className="blue-label-criarPontoColeta">Bairro</label>}
+                                        maxLength={50}
+                                        value={formCriarEvento.address.bairro}
+                                        error={erros.bairro ? { content: erros.bairro } : undefined} // Exibe o erro se houver
+                                        onChange={(e) => {
+                                            const novoBairro = e.target.value;
+                                            setFormCriarEvento({
+                                                ...formCriarEvento,
+                                                address: { ...formCriarEvento.address, bairro: novoBairro }
+                                            });
 
-                            {/* Estado */}
-                            <FormInput
-                                label={<label className="blue-label-criarPontoColeta">Estado</label>}
-                                value={formCriarEvento.address.estado}
-                                maxLength={2}
-                                error={erros.estado ? { content: erros.estado } : undefined} // Exibe o erro se houver
-                                onChange={(e) => {
-                                    const novoEstado = e.target.value.toUpperCase(); // Convertendo para maiúsculo
-                                    setFormCriarEvento({
-                                        ...formCriarEvento,
-                                        address: { ...formCriarEvento.address, estado: novoEstado }
-                                    });
+                                            // Validação: o bairro não pode estar vazio
+                                            if (novoBairro.trim() === '') {
+                                                setErros({ ...erros, bairro: 'O bairro é obrigatório' });
+                                            } else if (novoBairro.length > 49) {
+                                                setErros({ ...erros, bairro: 'O bairro deve ter no máximo 50 caracteres' });
+                                            } else {
+                                                const { bairro, ...restErros } = erros;
+                                                setErros(restErros); // Remove o erro do bairro se o valor for válido
+                                            }
+                                        }}
+                                    />
+                                </FormGroup>
+                                <FormGroup widths="equal">
+                                    <FormInput
+                                        fluid
+                                        label={<label className="blue-label-criarPontoColeta">Rua</label>}
+                                        maxLength={50}
+                                        value={formCriarEvento.address.rua}
+                                        error={erros.rua ? { content: erros.rua } : undefined} // Exibe o erro se houver
+                                        onChange={(e) => {
+                                            const novaRua = e.target.value;
+                                            setFormCriarEvento({
+                                                ...formCriarEvento,
+                                                address: { ...formCriarEvento.address, rua: novaRua }
+                                            });
 
-                                    // Validação: o estado não pode estar vazio
-                                    if (novoEstado.trim() === '') {
-                                        setErros({ ...erros, estado: 'O estado é obrigatório' });
-                                    } else if (novoEstado.length > 2) {
-                                        setErros({ ...erros, estado: 'O estado deve ter no máximo 2 caracteres' });
-                                    } else {
-                                        const { estado, ...restErros } = erros;
-                                        setErros(restErros); // Remove o erro do estado se o valor for válido
-                                    }
-                                }}
-                            />
+                                            // Validação: a rua não pode estar vazia
+                                            if (novaRua.trim() === '') {
+                                                setErros({ ...erros, rua: 'A rua é obrigatória' });
+                                            } else if (novaRua.length > 49) {
+                                                setErros({ ...erros, rua: 'A rua deve ter no máximo 50 caracteres' });
+                                            } else {
+                                                const { rua, ...restErros } = erros;
+                                                setErros(restErros); // Remove o erro da rua se o valor for válido
+                                            }
+                                        }}
+                                    />
+                                    <FormInput
+                                        fluid
+                                        label={<label className="blue-label-criarPontoColeta">Número</label>}
+                                        value={formCriarEvento.address.numero}
+                                        maxLength={6}
+                                        error={erros.numero ? { content: erros.numero } : undefined} // Exibe o erro se houver
+                                        onChange={(e) => {
+                                            const novoNumero = e.target.value;
+                                            setFormCriarEvento({
+                                                ...formCriarEvento,
+                                                address: { ...formCriarEvento.address, numero: novoNumero }
+                                            });
 
-                            {/* Cidade */}
-                            <FormInput
-                                label={<label className="blue-label-criarPontoColeta">Cidade</label>}
-                                maxLength={50}
-                                value={formCriarEvento.address.cidade}
-                                error={erros.cidade ? { content: erros.cidade } : undefined} // Exibe o erro se houver
-                                onChange={(e) => {
-                                    const novaCidade = e.target.value;
-                                    setFormCriarEvento({
-                                        ...formCriarEvento,
-                                        address: { ...formCriarEvento.address, cidade: novaCidade }
-                                    });
+                                            // Validação: o número não pode estar vazio
+                                            if (novoNumero.trim() === '') {
+                                                setErros({ ...erros, numero: 'O número é obrigatório' });
+                                            } else if (novoNumero.length > 6) {
+                                                setErros({ ...erros, numero: 'O número deve ter no máximo 6 caracteres' });
+                                            } else {
+                                                const { numero, ...restErros } = erros;
+                                                setErros(restErros); // Remove o erro do número se o valor for válido
+                                            }
+                                        }}
+                                    />
+                                </FormGroup>
+                                {/* Exibir Imagem Existente */}
+                                {/*                                 
+                                    <Form.Field>
+                                        <label>Imagem do Evento</label>
+                                        <div className="image-edit-container">
+                                            <Image
+                                                src={evento.photosUrl[0]}
+                                                alt={`Imagem do evento ${evento.titulo}`}
+                                                className="image-preview-thumbnail"
+                                                size="small"
+                                            />
+                                            <Button
+                                                icon="trash"
+                                                color="red"
+                                                onClick={() => handleRemoverImagem(0)}
+                                                size="small"
+                                            />
+                                        </div>
+                                    </Form.Field>
+                             */}
+                                {/* Input para adicionar nova imagem */}
+                                <Form.Field>
+                                    <label>Adicionar Imagem</label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => handleAdicionarImagens(e)}
+                                    />
+                                </Form.Field>
+                                <FormInput
+                                    label={<label className="blue-label-criarPontoColeta">Descrição</label>}
+                                    value={formCriarEvento.descricao}
+                                    maxLength={3999}
+                                    control={TextArea}
+                                    style={{ resize: "none" }}
+                                    error={erros.descricao ? { content: erros.descricao } : undefined} // Exibe o erro se houver
+                                    onChange={(e) => {
+                                        const novaDescricao = e.target.value;
+                                        setFormCriarEvento({
+                                            ...formCriarEvento,
+                                            descricao: novaDescricao
+                                        });
 
-                                    // Validação: a cidade não pode estar vazia
-                                    if (novaCidade.trim() === '') {
-                                        setErros({ ...erros, cidade: 'A cidade é obrigatória' });
-                                    } else if (novaCidade.length > 49) {
-                                        setErros({ ...erros, cidade: 'A cidade deve ter no máximo 50 caracteres' });
-                                    } else {
-                                        const { cidade, ...restErros } = erros;
-                                        setErros(restErros); // Remove o erro da cidade se o valor for válido
-                                    }
-                                }}
-                            />
-
-                            {/* Bairro */}
-                            <FormInput
-                                label={<label className="blue-label-criarPontoColeta">Bairro</label>}
-                                maxLength={50}
-                                value={formCriarEvento.address.bairro}
-                                error={erros.bairro ? { content: erros.bairro } : undefined} // Exibe o erro se houver
-                                onChange={(e) => {
-                                    const novoBairro = e.target.value;
-                                    setFormCriarEvento({
-                                        ...formCriarEvento,
-                                        address: { ...formCriarEvento.address, bairro: novoBairro }
-                                    });
-
-                                    // Validação: o bairro não pode estar vazio
-                                    if (novoBairro.trim() === '') {
-                                        setErros({ ...erros, bairro: 'O bairro é obrigatório' });
-                                    } else if (novoBairro.length > 49) {
-                                        setErros({ ...erros, bairro: 'O bairro deve ter no máximo 50 caracteres' });
-                                    } else {
-                                        const { bairro, ...restErros } = erros;
-                                        setErros(restErros); // Remove o erro do bairro se o valor for válido
-                                    }
-                                }}
-                            />
-
-                            {/* Rua */}
-                            <FormInput
-                                label={<label className="blue-label-criarPontoColeta">Rua</label>}
-                                maxLength={50}
-                                value={formCriarEvento.address.rua}
-                                error={erros.rua ? { content: erros.rua } : undefined} // Exibe o erro se houver
-                                onChange={(e) => {
-                                    const novaRua = e.target.value;
-                                    setFormCriarEvento({
-                                        ...formCriarEvento,
-                                        address: { ...formCriarEvento.address, rua: novaRua }
-                                    });
-
-                                    // Validação: a rua não pode estar vazia
-                                    if (novaRua.trim() === '') {
-                                        setErros({ ...erros, rua: 'A rua é obrigatória' });
-                                    } else if (novaRua.length > 49) {
-                                        setErros({ ...erros, rua: 'A rua deve ter no máximo 50 caracteres' });
-                                    } else {
-                                        const { rua, ...restErros } = erros;
-                                        setErros(restErros); // Remove o erro da rua se o valor for válido
-                                    }
-                                }}
-                            />
-
-                            {/* Número */}
-                            <FormInput
-                                label={<label className="blue-label-criarPontoColeta">Número</label>}
-                                value={formCriarEvento.address.numero}
-                                maxLength={6}
-                                error={erros.numero ? { content: erros.numero } : undefined} // Exibe o erro se houver
-                                onChange={(e) => {
-                                    const novoNumero = e.target.value;
-                                    setFormCriarEvento({
-                                        ...formCriarEvento,
-                                        address: { ...formCriarEvento.address, numero: novoNumero }
-                                    });
-
-                                    // Validação: o número não pode estar vazio
-                                    if (novoNumero.trim() === '') {
-                                        setErros({ ...erros, numero: 'O número é obrigatório' });
-                                    } else if (novoNumero.length > 6) {
-                                        setErros({ ...erros, numero: 'O número deve ter no máximo 6 caracteres' });
-                                    } else {
-                                        const { numero, ...restErros } = erros;
-                                        setErros(restErros); // Remove o erro do número se o valor for válido
-                                    }
-                                }}
-                            />
-                            {/* URL do Mapa */}
-                            <FormInput
-                                label={<label className="blue-label-criarPontoColeta">URL do Mapa</label>}
-                                value={formCriarEvento.descricao}
-                                maxLength={255} 
-                                error={erros.urlMap ? { content: erros.urlMap } : undefined} // Exibe o erro se houver
-                                onChange={(e) => {
-                                    const novaDescricao = e.target.value;
-                                    setFormCriarEvento({
-                                        ...formCriarEvento,
-                                        descricao: novaDescricao
-                                    });
-
-                                    // Validação: a descricao não pode estar vazia
-                                    if (novaDescricao.trim() === '') {
-                                        setErros({ ...erros, descricao: 'Descrição do Evento é obrigatória' });
-                                    } else if (novaDescricao.length > 254) {
-                                        setErros({ ...erros, descricao: 'A Descrição do Evento deve ter no máximo 255 caracteres' });
-                                    } else {
-                                        const { descricao, ...restErros } = erros;
-                                        setErros(restErros); // Remove o erro da URL se o valor for válido
-                                    }
-                                }}
-                            />
-
-
-
-                            {/* Botões de ação */}
-                            <div className="container-acoes-btnc-ataualizarPontoColeta">
-                                <Button type="button" color="red" onClick={cancelarEdicao}>Cancelar</Button>
-                                <Button type="submit" className="salvarAtualizacao" onClick={enviarEdicao}>Salvar atualização</Button>
-                            </div>
-                        </Form>
-
-
+                                        // Validação: a descricao não pode estar vazia
+                                        if (novaDescricao.trim() === '') {
+                                            setErros({ ...erros, descricao: 'Descrição do Evento é obrigatória' });
+                                        } else if (novaDescricao.length > 4000) {
+                                            setErros({ ...erros, descricao: 'A Descrição do Evento deve ter no máximo 4000 caracteres' });
+                                        } else {
+                                            const { descricao, ...restErros } = erros;
+                                            setErros(restErros); // Remove o erro da URL se o valor for válido
+                                        }
+                                    }}
+                                />
+                            </Form>
+                        </div>
+                        {/* Botões de ação */}
+                        <div className="container-acoes-btnc-criarEvento">
+                            <Button type="button" color="red" onClick={cancelarEdicao}>Cancelar</Button>
+                            <Button type="submit" className="salvarAtualizacao" onClick={enviarEdicao}>Salvar atualização</Button>
+                        </div>
                     </div>
                 )}
 
-            </div>
+            </div >
         </>
     );
 }

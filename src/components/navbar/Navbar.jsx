@@ -92,8 +92,12 @@ const Navbar = () => {
                     </Menu.Item>
                 </Link>
                 <Link to="/">
-                    <Menu.Item as="a" onClick={() => setVisible(false)} position='left'>
-                        <Icon name="sign-out" size="big"  />
+                    <Menu.Item
+                        as="a"
+                        onClick={() => setVisible(false)}
+                        style={{ textAlign: 'left', display: 'flex', justifyContent: 'flex-start', alignItems: 'center',  margin: '0' }}
+                    >
+                        <Icon name="sign-out" size="big" />
                     </Menu.Item>
                 </Link>
             </Sidebar>

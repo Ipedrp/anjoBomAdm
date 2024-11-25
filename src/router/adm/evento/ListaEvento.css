@@ -74,6 +74,31 @@ tr:nth-child(even) td {
     background-color: #0e4d7a !important;
 }
 
+/* 
+alert */
+
+/* CustomSweetAlert.css */
+
+.swal2-title {
+    font-size: 1.5em; /* Tamanho da fonte do título */
+    color: #0056b3; /* Cor do título */
+}
+
+/* CustomSweetAlert.css */
+
+.evento-details p {
+    font-size: 1.1em; /* Tamanho da fonte do conteúdo */
+    color: #56616d; /* Cor do texto */
+    text-align: justify;
+    margin: 5px 0; /* Margem entre os parágrafos */
+}
+
+.evento-details span{
+    color: #0056b3;
+    font-weight: 600;
+}
+
+
 /* Estilo para versão mobile */
 @media (max-width: 768px) {
     .mobile-table-container {
@@ -82,7 +107,7 @@ tr:nth-child(even) td {
         gap: 10px;
         width: 100%;
         padding: 10px;
-        background-color: #135F99;
+        background-color: #616d76 !important;
         border-radius: 9px;
     }
 

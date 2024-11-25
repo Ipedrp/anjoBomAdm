@@ -250,18 +250,6 @@ function ListaPontoColeta() {
         }
     };
 
-
-    //Fim área de Edição
-
-    // const navigate = useNavigate();
-
-    // const verMais = (id) => {
-    //     navigate(`/detalhePontoColeta/${id}`);
-    // };
-
-    // //fim metodo ver mais
-
-
     const verMais = async (id) => {
         try {
             const response = await axios.get('https://apianjobom.victordev.shop/coletas/buscarPontosDeColeta', {
@@ -350,6 +338,12 @@ function ListaPontoColeta() {
                                                 color="red"
                                                 size="large"
                                                 onClick={() => confirmarDelecao(ponto.id)} />
+                                            <Icon
+                                                name="eye"
+                                                color="blue"
+                                                size="large"
+                                                onClick={() => verMais(ponto.id)}
+                                                style={{ cursor: 'pointer' }} />
                                         </div>
                                     </div>
                                 ))}

@@ -1,32 +1,88 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Table, Icon, Label, Menu, MenuItem } from 'semantic-ui-react';
 import { Link } from "react-router-dom";
 import NavbarAcoes from "../../../components/navbarAcoes/NavbarAcoes";
 import Header from "../../../components/header/Header";
+import axios from "axios";
+import Swal from "sweetalert2";
 import { useMediaQuery } from 'react-responsive';
 
 import './ListaDoacoesRetirar.css';
 
-const doacoes = [
-    { id: 1, nome: "Evento A", endereco: "Rua X, 123", data: "2024-10-12", status: "Pendente" },
-    { id: 2, nome: "Evento B", endereco: "Rua Y, 456", data: "2024-10-13", status: "Retirado" },
-    { id: 3, nome: "Evento C", endereco: "Rua Z, 789", data: "2024-10-14", status: "Retirado" },
-    { id: 4, nome: "Evento D", endereco: "Rua W, 101", data: "2024-10-15", status: "Retirado" },
-    { id: 5, nome: "Evento E", endereco: "Rua V, 202", data: "2024-10-16", status: "Pendente" },
-    { id: 6, nome: "Evento F", endereco: "Rua U, 303", data: "2024-10-17", status: "Pendente" },
-    { id: 7, nome: "Evento G", endereco: "Rua T, 404", data: "2024-10-18", status: "Pendente" },
-    { id: 8, nome: "Evento H", endereco: "Rua S, 505", data: "2024-10-19", status: "Pendente" },
-    { id: 9, nome: "Evento I", endereco: "Rua R, 606", data: "2024-10-20", status: "Retirado" },
-    { id: 10, nome: "Evento J", endereco: "Rua S, 707", data: "2024-10-21", status: "Pendente" },
-    { id: 11, nome: "Evento J", endereco: "Rua S, 707", data: "2024-10-21", status: "Pendente" },
-    { id: 12, nome: "Evento J", endereco: "Rua S, 707", data: "2024-10-21", status: "Pendente" },
-    { id: 13, nome: "Evento J", endereco: "Rua S, 707", data: "2024-10-21", status: "Pendente" },
-    { id: 14, nome: "Evento J", endereco: "Rua S, 707", data: "2024-10-21", status: "Pendente" },
-
-];
-
 function ListaDoacoesRetirar() {
-    
+
+    const [doacoes, setDoacoes] = useState([]);
+
+    const token = localStorage.getItem('authorization')
+
+    useEffect(() => {
+        fetchDoacoes();
+    }, []);
+
+    const fetchDoacoes = async () => {
+        try {
+            const response = await axios.get('https://apianjobom.victordev.shop/admin/cestas', {
+                headers: { Authorization: token }
+            });
+            setDoacoes(response.data);
+
+        } catch (error) {
+            console.error('Erro ao buscar doações:', error);
+        }
+    };
+
+    console.log("veja essas doacoes: ", doacoes)
+
+    const verMais = async (id) => {
+        try {
+            const response = await axios.get('https://apianjobom.victordev.shop/admin/cestas', {
+                headers: { Authorization: token },
+            });
+
+            const doacao = response.data.find((doacao) => doacao.id === id);
+
+            if (doacao) {
+                Swal.fire({
+                    title: `${doacao.doador.name}`,
+                    html: `  
+                        <div class="doacao-details">
+                            <p><strong>Telefone:</strong> ${doacao.doador.telefone || 'Não informado'}</p>
+                            <p><strong>Status:</strong> ${doacao.status}</p>
+                            <p><strong>Produtos:</strong></p>
+                            <ul>
+                                ${doacao.items.produtos
+                            .map(
+                                (produto) =>
+                                    `<li>${produto.name} (Quantidade: ${produto.quantity})</li>`
+                            )
+                            .join('')}
+                            </ul>
+                        </div>
+                    `,
+                    confirmButtonText: 'Fechar',
+                    background: '#f0f0f0',
+                    padding: '20px',
+                });
+
+            } else {
+                Swal.fire({
+                    title: 'Ponto de Coleta não encontrado',
+                    icon: 'error',
+                    confirmButtonText: 'Fechar',
+                });
+            }
+        } catch (error) {
+            console.error("Erro ao buscar pontos de coleta", error);
+            Swal.fire({
+                title: 'Erro ao buscar dados',
+                text: 'Não foi possível carregar os detalhes.',
+                icon: 'error',
+                confirmButtonText: 'Fechar',
+            });
+        }
+    };
+
+
     const [paginaAtual, setPaginaAtual] = useState(1);
     const itensPorPagina = 5;
     const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
@@ -58,27 +114,48 @@ function ListaDoacoesRetirar() {
                     // VERSÃO MOBILE
                     <div className="mobile-table-container">
                         {doacoesPaginaAtual.map((doacao) => (
-                            <div key={doacao.id} className="mobile-table-row">
-                                <div className="mobile-table-cell">
-                                    <strong>ID:</strong> {doacao.id}
-                                </div>
-                                <div className="mobile-table-cell">
-                                    <strong>Nome:</strong> {doacao.nome}
-                                </div>
-                                <div className="mobile-table-cell">
-                                    <strong>Endereço:</strong> {doacao.endereco}
-                                </div>
-                                <div className="mobile-table-cell">
-                                    <strong>Data:</strong> {doacao.data}
-                                </div>
-                                <div className="mobile-table-cell">
-                                    <strong>Status:</strong> {doacao.status}
-                                </div>
-                                <div className="mobile-table-actions">
-                                    <Icon name="pencil" color="yellow" size="large" />
-                                    <Icon name="trash alternate outline" color="red" size="large" />
-                                </div>
+                            <div className="mobile-table-container">
+                                {doacoesPaginaAtual.map((doacao) => (
+                                    <div key={doacao.id} className="mobile-table-row">
+                                        <div className="mobile-table-cell">
+                                            <strong>Nome:</strong> {doacao.doador.name}
+                                        </div>
+                                        <div className="mobile-table-cell">
+                                            <strong>Telefone:</strong> {doacao.doador.telefone || 'Não informado'}
+                                        </div>
+                                        <div className="mobile-table-cell">
+                                            <strong>Produtos:</strong>
+                                            {doacao.items.produtos.map((produto) => produto.name).join(', ')}
+                                        </div>
+
+                                        <div className="mobile-table-cell">
+                                            <strong>Quantidade:</strong>
+                                            {doacao.items.produtos.map((produto) => (
+                                                <div key={produto._id}>
+                                                    {produto.quantity}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="mobile-table-cell">
+                                            <strong>Status:</strong> {doacao.status}
+                                        </div>
+                                        <div className="mobile-table-actions">
+                                            <Icon
+                                                name="dolly"
+                                                color="green"
+                                                size="large"
+                                                style={{ cursor: 'pointer' }} />
+                                            <Icon
+                                                name="eye"
+                                                color="blue"
+                                                size="large"
+                                                onClick={() => verMais(doacao.id)}
+                                                style={{ cursor: 'pointer' }} />
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
+
                         ))}
 
                         {/* Adicionando a navegação para versão mobile */}
@@ -121,10 +198,10 @@ function ListaDoacoesRetirar() {
                     <Table celled stackable>
                         <Table.Header>
                             <Table.Row className="table-row-doacoesRetirar">
-                                <Table.HeaderCell className="table-row-doacoesRetirar">ID</Table.HeaderCell>
                                 <Table.HeaderCell className="table-row-doacoesRetirar">Nome</Table.HeaderCell>
-                                <Table.HeaderCell className="table-row-doacoesRetirar">Endereço</Table.HeaderCell>
-                                <Table.HeaderCell className="table-row-doacoesRetirar">Data do Registro</Table.HeaderCell>
+                                <Table.HeaderCell className="table-row-doacoesRetirar">Telefone</Table.HeaderCell>
+                                <Table.HeaderCell className="table-row-doacoesRetirar">Produtos</Table.HeaderCell>
+                                <Table.HeaderCell className="table-row-doacoesRetirar">Quantidade</Table.HeaderCell>
                                 <Table.HeaderCell className="table-row-doacoesRetirar">Status</Table.HeaderCell>
                                 <Table.HeaderCell className="table-row-doacoesRetirar">Ações</Table.HeaderCell>
                             </Table.Row>
@@ -133,14 +210,27 @@ function ListaDoacoesRetirar() {
                         <Table.Body className="table-body-fixed">
                             {doacoesPaginaAtual.map((doacao) => (
                                 <Table.Row key={doacao.id}>
-                                    <Table.Cell>{doacao.id}</Table.Cell>
-                                    <Table.Cell>{doacao.nome}</Table.Cell>
-                                    <Table.Cell>{doacao.endereco}</Table.Cell>
-                                    <Table.Cell>{doacao.data}</Table.Cell>
+                                    <Table.Cell>{doacao.doador.name}</Table.Cell>
+                                    <Table.Cell>{doacao.doador.telefone || 'Não informado'}</Table.Cell>
+                                    <Table.Cell>
+                                        {doacao.items.produtos.map((produto) => produto.name).join(', ')}
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        {doacao.items.produtos.map((produto) => produto.quantity).join(', ')}
+                                    </Table.Cell>
                                     <Table.Cell>{doacao.status}</Table.Cell>
                                     <Table.Cell>
-                                        <Icon name="pencil" color="yellow" size="large" />
-                                        <Icon name="trash alternate outline" color="red" size="large" />
+                                        <Icon
+                                            name="dolly"
+                                            color="green"
+                                            size="large"
+                                            style={{ cursor: 'pointer' }} />
+                                        <Icon
+                                            name="eye"
+                                            color="blue"
+                                            size="large"
+                                            onClick={() => verMais(doacao.id)}
+                                            style={{ cursor: 'pointer' }} />
                                     </Table.Cell>
                                 </Table.Row>
                             ))}
