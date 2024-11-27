@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Table, Icon, Label, Menu, MenuItem, Form, FormGroup, FormInput, FormField, TextArea } from 'semantic-ui-react';
+import { Button, Table, Icon, Label, Menu, MenuItem, Form, FormGroup, FormInput, FormField, TextArea, Image } from 'semantic-ui-react';
 import { Link } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
 import NavbarAcoes from "../../../components/navbarAcoes/NavbarAcoes";
@@ -34,6 +34,8 @@ function ListaEvento() {
 
     // Estado para armazenar os arquivos selecionados
     const [files, setFiles] = useState([]);
+    const [existingPhotos, setExistingPhotos] = useState(eventoParaEditar?.photosUrl || []); // Fotos já salvas
+
 
     const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
     const token = localStorage.getItem('authorization');
@@ -56,7 +58,6 @@ function ListaEvento() {
         fetchEventos();
     }, [])
 
-
     const fetchEventos = async () => {
         try {
             const response = await axios.get('https://apianjobom.victordev.shop/eventos/', {
@@ -71,7 +72,6 @@ function ListaEvento() {
             console.error('Erro ao buscar os EVENTOS:', error);
         }
     };
-
 
 
     const deletarEvento = async (id) => {
@@ -95,7 +95,6 @@ function ListaEvento() {
 
         }
     }
-
 
     const confirmarDelecao = (id) => {
         Swal.fire({
@@ -164,7 +163,6 @@ function ListaEvento() {
         }
     };
 
-
     //Área de Edição    
 
     const formatCEP = (cep) => {
@@ -173,7 +171,6 @@ function ListaEvento() {
         const match = cleaned.match(/^(\d{5})(\d{3})$/);
         return match ? `${match[1]}-${match[2]}` : cleaned;
     }
-
 
     const validateCep = async (value) => {
 
@@ -223,6 +220,8 @@ function ListaEvento() {
 
         // Carrega as imagens existentes no estado `files`
         setFiles(evento.imagens || []);
+        // Popula o estado das fotos existentes
+        setExistingPhotos(evento.photosUrl || []);
 
         // Valida o CEP formatado
         validateCep(cepFormatado);
@@ -241,117 +240,69 @@ function ListaEvento() {
     // Adiciona novas imagens ao estado `files`
     const handleAdicionarImagens = (event) => {
         const novasImagens = Array.from(event.target.files);
-        setFiles([...files, ...novasImagens]);
+        setFiles((prevFiles) => [...prevFiles, ...novasImagens]);
     };
 
-    // Remove uma imagem do estado `files` pelo índice
-    const handleRemoverImagem = (index) => {
-        const novasImagens = files.filter((_, i) => i !== index);
-        setFiles(novasImagens);
+
+    const handleRemoverImagemExistente = (index) => {
+        const novasImagens = existingPhotos.filter((_, i) => i !== index); // Remove pelo índice
+        setExistingPhotos(novasImagens); // Atualiza o estado
+        console.log("Novo estado de existingPhotos:", novasImagens); // Verifique o novo estado
     };
 
 
     // Função para enviar o formulário editado
     const enviarEdicao = async () => {
-        // const { titulo, descricao, address } = formCriarEvento;
-        // const { cep, estado, cidade, bairro, rua, numero } = address;
-        // let encontrouErros = false;
-        // const novosErros = {};
-
-        // // Validação dos campos
-        // if (titulo.trim() === '') {
-        //     novosErros.name = 'Título do evento é obrigatório';
-        //     encontrouErros = true;
-        // }
-        // if (descricao.trim() === '') {
-        //     novosErros.name = 'Descrição do evento é obrigatório';
-        //     encontrouErros = true;
-        // }
-        // if (cep.trim() === '') {
-        //     novosErros.cep = 'CEP é obrigatório';
-        //     encontrouErros = true;
-        // } else if (cep.length < 9) {
-        //     novosErros.cep = 'CEP inválido, deve conter 9 caracteres';
-        //     encontrouErros = true;
-        // }
-        // if (estado.trim() === '') {
-        //     novosErros.estado = 'O estado é obrigatório';
-        //     encontrouErros = true;
-        // }
-        // if (cidade.trim() === '') {
-        //     novosErros.cidade = 'A cidade é obrigatória';
-        //     encontrouErros = true;
-        // }
-        // if (bairro.trim() === '') {
-        //     novosErros.bairro = 'O bairro é obrigatório';
-        //     encontrouErros = true;
-        // }
-        // if (rua.trim() === '') {
-        //     novosErros.rua = 'A rua é obrigatória';
-        //     encontrouErros = true;
-        // }
-        // if (numero.trim() === '') {
-        //     novosErros.numero = 'O número é obrigatório';
-        //     encontrouErros = true;
-        // }
-        // if (urlMap.trim() === '') {
-        //     novosErros.urlMap = 'A URL do mapa é obrigatória';
-        //     encontrouErros = true;
-        // }
-
-        // // Verifica e valida o CEP antes de enviar
-        // await validateCep(formCriarEvento.address.cep);
-
-        // // Checa se o campo CEP possui erro
-        // if (erros.cep) {
-        //     console.log("Erro ao atualizar: CEP inválido.");
-        //     return; // Interrompe o envio se o CEP for inválido
-        // }
-
-        // if (encontrouErros) {
-        //     setErros(novosErros);
-        //     return;
-        // }
-
         const formData = new FormData();
 
-        // Adding form data (text inputs)
+        // Adicionando campos do formulário ao FormData
         formData.append('titulo', formCriarEvento.titulo);
         formData.append('descricao', formCriarEvento.descricao);
         formData.append('data_inicio', formCriarEvento.data_inicio);
         formData.append('data_fim', formCriarEvento.data_fim);
-        formData.append('address', JSON.stringify(formCriarEvento.address)); // Convertendo o endereço para JSON
+        formData.append('address', JSON.stringify(formCriarEvento.address));
 
-        // Adicionando os arquivos ao FormData
+        // Adicionar URLs das imagens existentes (mantidas no backend)
+        formData.append('existingPhotos', JSON.stringify(existingPhotos));
+
+        // Adicionando novas imagens carregadas
         files.forEach((file) => {
-            formData.append('photos_event', file);
+            formData.append('newPhotos', file);
         });
 
-
-        // Se não houver erros, continue com o envio
         try {
-            await axios.put(`https://apianjobom.victordev.shop/admin/atualizarPontoDeColeta/${eventoParaEditar.id}`, formCriarEvento, {
-                headers: {
-                    Authorization: token,
-                    "Content-Type": "multipart/form-data"
+            await axios.put(
+                `https://apianjobom.victordev.shop/admin/atualizarEvento/${eventoParaEditar.id}`,
+                formData,
+                {
+                    headers: {
+                        Authorization: token,
+                        'Content-Type': 'multipart/form-data', // Garantindo o cabeçalho correto
+                    },
                 }
-            });
+            );
+
             Swal.fire({
                 icon: 'success',
                 title: 'Atualizado!',
                 text: 'O Evento foi atualizado.',
                 timer: 1300,
-                showConfirmButton: false
+                showConfirmButton: false,
             });
-            fetchPontos();
-            setEditando(false); // Volta para a tabela
+
+            fetchEventos(); // Atualiza os dados após a edição
+            setEditando(false); // Volta para o estado inicial (não editando)
         } catch (error) {
-            console.error('Erro ao editar o evento:', error);
+            console.error('Erro ao editar o evento:', error.response?.data || error.message);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro!',
+                text: 'Não foi possível atualizar o evento. Verifique os dados.',
+            });
         }
     };
 
     //Fim área de Edição
-
 
     console.log("todos os evcento dessa buceta", allEventos)
     console.log("img aqui ", files)
@@ -714,33 +665,40 @@ function ListaEvento() {
                                         }}
                                     />
                                 </FormGroup>
-                                {/* Exibir Imagem Existente */}
-                                {/*                                 
-                                    <Form.Field>
-                                        <label>Imagem do Evento</label>
-                                        <div className="image-edit-container">
-                                            <Image
-                                                src={evento.photosUrl[0]}
-                                                alt={`Imagem do evento ${evento.titulo}`}
-                                                className="image-preview-thumbnail"
-                                                size="small"
-                                            />
-                                            <Button
-                                                icon="trash"
-                                                color="red"
-                                                onClick={() => handleRemoverImagem(0)}
-                                                size="small"
-                                            />
-                                        </div>
-                                    </Form.Field>
-                             */}
+                                <Form.Field>
+                                    <label>Imagens do Evento</label>
+                                    <div className="image-edit-container">
+                                        {/* Renderizar imagens existentes */}
+                                        {existingPhotos.map((url, index) => (
+                                            <div key={`existing-${index}`} className="image-wrapper">
+                                                <img
+                                                    src={url}
+                                                    alt={`Imagem existente ${index + 1}`}
+                                                    className="image-preview-thumbnail"
+                                                    style={{ width: '150px', height: '150px', objectFit: 'cover' }}
+                                                />
+                                                <Button
+                                                    icon="trash"
+                                                    color="red"
+                                                    onClick={() => handleRemoverImagemExistente(index)}
+                                                    size="small"
+                                                    title="Remover imagem existente"
+                                                />
+                                            </div>
+                                        ))}
+
+                                    </div>
+                                </Form.Field>
+
+
                                 {/* Input para adicionar nova imagem */}
                                 <Form.Field>
-                                    <label>Adicionar Imagem</label>
+                                    <label>Adicionar Novas Imagens</label>
                                     <input
                                         type="file"
                                         accept="image/*"
-                                        onChange={(e) => handleAdicionarImagens(e)}
+                                        multiple // Permite selecionar várias imagens de uma vez
+                                        onChange={handleAdicionarImagens}
                                     />
                                 </Form.Field>
                                 <FormInput

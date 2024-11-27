@@ -33,6 +33,31 @@ function ListaDoacoesRetirar() {
 
     console.log("veja essas doacoes: ", doacoes)
 
+    const atualizarCesta = async (id) => {
+        console.log("esse é o id da doacao: ", id)
+        try {
+            const response = await axios.put(
+                `https://apianjobom.victordev.shop/admin/cestas/${id}`, { id },
+                { headers: { Authorization: token } }
+            );
+            if (response.status === 200) {
+                alert('Cesta atualizada com sucesso!');
+                fetchDoacoes(); // Recarregar as doações após a atualização
+            }
+            Swal.fire({
+                title: 'Cesta atualizada com sucesso!',
+                icon: 'success',  // Corrigido para 'success' (não 'sucess')
+                showConfirmButton: false,  // Remove o botão de confirmação
+                timer: 1500,  // (Opcional) Adiciona um timer de 1.5 segundos antes de fechar automaticamente
+            });
+
+            fetchDoacoes();
+        } catch (error) {
+            console.error('Erro ao atualizar a cesta:', error);
+            alert('Erro ao atualizar a cesta.');
+        }
+    };
+
     const verMais = async (id) => {
         try {
             const response = await axios.get('https://apianjobom.victordev.shop/admin/cestas', {
@@ -114,48 +139,42 @@ function ListaDoacoesRetirar() {
                     // VERSÃO MOBILE
                     <div className="mobile-table-container">
                         {doacoesPaginaAtual.map((doacao) => (
-                            <div className="mobile-table-container">
-                                {doacoesPaginaAtual.map((doacao) => (
-                                    <div key={doacao.id} className="mobile-table-row">
-                                        <div className="mobile-table-cell">
-                                            <strong>Nome:</strong> {doacao.doador.name}
-                                        </div>
-                                        <div className="mobile-table-cell">
-                                            <strong>Telefone:</strong> {doacao.doador.telefone || 'Não informado'}
-                                        </div>
-                                        <div className="mobile-table-cell">
-                                            <strong>Produtos:</strong>
-                                            {doacao.items.produtos.map((produto) => produto.name).join(', ')}
-                                        </div>
-
-                                        <div className="mobile-table-cell">
-                                            <strong>Quantidade:</strong>
-                                            {doacao.items.produtos.map((produto) => (
-                                                <div key={produto._id}>
-                                                    {produto.quantity}
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <div className="mobile-table-cell">
-                                            <strong>Status:</strong> {doacao.status}
-                                        </div>
-                                        <div className="mobile-table-actions">
-                                            <Icon
-                                                name="dolly"
-                                                color="green"
-                                                size="large"
-                                                style={{ cursor: 'pointer' }} />
-                                            <Icon
-                                                name="eye"
-                                                color="blue"
-                                                size="large"
-                                                onClick={() => verMais(doacao.id)}
-                                                style={{ cursor: 'pointer' }} />
-                                        </div>
-                                    </div>
-                                ))}
+                            <div key={doacao.id} className="mobile-table-row">
+                                <div className="mobile-table-cell">
+                                    <strong>Nome: </strong> {doacao.doador.name}
+                                </div>
+                                <div className="mobile-table-cell">
+                                    <strong>Telefone: </strong> {doacao.doador.telefone || 'Não informado'}
+                                </div>
+                                <div className="mobile-table-cell">
+                                    <strong>Produtos: </strong>
+                                    {doacao.items.produtos.map((produto) => produto.name).join(', ')}
+                                </div>
+                                <div className="mobile-table-cell">
+                                    <strong>Quantidade Total: </strong>
+                                    {/* Calculando o total de produtos */}
+                                    {doacao.items.produtos.reduce((total, produto) => total + produto.quantity, 0)}
+                                </div>
+                                <div className="mobile-table-cell">
+                                    <strong>Status:</strong> {doacao.status}
+                                </div>
+                                <div className="mobile-table-actions">
+                                    {doacao.status === "PENDENTE" &&
+                                        <Icon
+                                            name="dolly"
+                                            color="green"
+                                            size="large"
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={() => atualizarCesta(doacao.id)}
+                                        />}
+                                    <Icon
+                                        name="eye"
+                                        color="blue"
+                                        size="large"
+                                        onClick={() => verMais(doacao.id)}
+                                        style={{ cursor: 'pointer' }} />
+                                </div>
                             </div>
-
                         ))}
 
                         {/* Adicionando a navegação para versão mobile */}
@@ -201,7 +220,7 @@ function ListaDoacoesRetirar() {
                                 <Table.HeaderCell className="table-row-doacoesRetirar">Nome</Table.HeaderCell>
                                 <Table.HeaderCell className="table-row-doacoesRetirar">Telefone</Table.HeaderCell>
                                 <Table.HeaderCell className="table-row-doacoesRetirar">Produtos</Table.HeaderCell>
-                                <Table.HeaderCell className="table-row-doacoesRetirar">Quantidade</Table.HeaderCell>
+                                <Table.HeaderCell className="table-row-doacoesRetirar">Quantidade Total</Table.HeaderCell>
                                 <Table.HeaderCell className="table-row-doacoesRetirar">Status</Table.HeaderCell>
                                 <Table.HeaderCell className="table-row-doacoesRetirar">Ações</Table.HeaderCell>
                             </Table.Row>
@@ -216,15 +235,19 @@ function ListaDoacoesRetirar() {
                                         {doacao.items.produtos.map((produto) => produto.name).join(', ')}
                                     </Table.Cell>
                                     <Table.Cell>
-                                        {doacao.items.produtos.map((produto) => produto.quantity).join(', ')}
+                                        {/* Soma as quantidades de todos os produtos da doação */}
+                                        {doacao.items.produtos.reduce((total, produto) => total + produto.quantity, 0)}
                                     </Table.Cell>
                                     <Table.Cell>{doacao.status}</Table.Cell>
                                     <Table.Cell>
-                                        <Icon
-                                            name="dolly"
-                                            color="green"
-                                            size="large"
-                                            style={{ cursor: 'pointer' }} />
+                                        {doacao.status === "PENDENTE" &&
+                                            <Icon
+                                                name="dolly"
+                                                color="green"
+                                                size="large"
+                                                style={{ cursor: 'pointer' }}
+                                                onClick={() => atualizarCesta(doacao.id)}
+                                            />}
                                         <Icon
                                             name="eye"
                                             color="blue"
