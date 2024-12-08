@@ -70,24 +70,37 @@ function ListaDoacoesRetirar() {
                 Swal.fire({
                     title: `${doacao.doador.name}`,
                     html: `  
-                        <div class="doacao-details">
+                        <div class="doacao-details">    
+                            <p><strong>CEP:</strong> ${doacao.doador.address.cep || 'Não informado'}</p>
+                            <p><strong>Cidade:</strong> ${doacao.doador.address.cidade || 'Não informado'}</p>
+                            <p><strong>Rua:</strong> ${doacao.doador.address.rua || 'Não informado'}</p>
+                            <p><strong>Bairro:</strong> ${doacao.doador.address.bairro || 'Não informado'}</p>
+                            <p><strong>Estado:</strong> ${doacao.doador.address.estado || 'Não informado'}</p>
                             <p><strong>Telefone:</strong> ${doacao.doador.telefone || 'Não informado'}</p>
                             <p><strong>Status:</strong> ${doacao.status}</p>
-                            <p><strong>Produtos:</strong></p>
-                            <ul>
-                                ${doacao.items.produtos
-                            .map(
-                                (produto) =>
-                                    `<li>${produto.name} (Quantidade: ${produto.quantity})</li>`
-                            )
-                            .join('')}
-                            </ul>
+                            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                                <thead>
+                                    <tr style="background-color: #f1f1f1;">
+                                        <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Produto</th>
+                                        <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Quantidade</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${doacao.items.produtos.map(produto => `
+                                        <tr>
+                                            <td style="padding: 8px; border: 1px solid #ddd;">${produto.name}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd;">${produto.quantity}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
                         </div>
                     `,
                     confirmButtonText: 'Fechar',
                     background: '#f0f0f0',
                     padding: '20px',
                 });
+                
 
             } else {
                 Swal.fire({

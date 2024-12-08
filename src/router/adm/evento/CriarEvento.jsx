@@ -4,14 +4,15 @@ import Header from "../../../components/header/Header";
 import NavbarAcoes from "../../../components/navbarAcoes/NavbarAcoes";
 import axios from 'axios'; // Certifique-se de importar o axios
 import './CriarEvento.css'; // Importa o CSS externo
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2'
 
 const CriarEvento = () => {
+    // Estado principal do formulário de criação de evento
     const [formCriarEvento, setFormCriarEvento] = useState({
-        titulo: '',
-        descricao: '',
-        address: {
+        titulo: '', // Título do evento
+        descricao: '', // Descrição do evento
+        address: { // Endereço do evento
             cep: '',
             estado: '',
             cidade: '',
@@ -19,9 +20,8 @@ const CriarEvento = () => {
             rua: '',
             numero: ''
         },
-        data_inicio: '11-11-2012',
-        data_fim: '11-12-2024',
-
+        data_inicio: '', // Data de início do evento
+        data_fim: '', // Data de término do evento
     });
 
     // Estado para armazenar os arquivos selecionados
@@ -29,10 +29,14 @@ const CriarEvento = () => {
 
     const token = localStorage.getItem('authorization');
 
+    const navigate = useNavigate(); // Hook para navegação
+
+
+    // Estado para gerenciar mensagens de erro nos campos
     const [erros, setErros] = useState({
-        titulo: "",
-        descricao: "",
-        address: {
+        titulo: "", // Erro relacionado ao título
+        descricao: "", // Erro relacionado à descrição
+        address: { // Erros relacionados ao endereço
             cep: "",
             estado: "",
             cidade: "",
@@ -40,6 +44,8 @@ const CriarEvento = () => {
             rua: "",
             numero: "",
         },
+        data_inicio: "", // Erro relacionado à data de início
+        data_fim: "", // Erro relacionado à data de término
         arquivos: "", // Novo campo para erros de arquivos
     });
 
@@ -121,6 +127,8 @@ const CriarEvento = () => {
                 [name]: value // Corrigido para usar prevState
             }));
         }
+
+
 
         // Validação de erros
 
@@ -250,6 +258,16 @@ const CriarEvento = () => {
             newErros.address.numero = "Número é obrigatório";
             valid = false;
         }
+        if (!formCriarEvento.data_inicio) {
+            newErros.data_inicio = "Data de início é obrigatória";
+            valid = false;
+        }
+
+        if (!formCriarEvento.data_fim) {
+            newErros.data_fim = "Data de fim é obrigatória";
+            valid = false;
+        }
+
         // Validação dos arquivos
         if (files.length === 0) {
             newErros.arquivos = "Ao menos uma foto deve ser selecionada."; // Adiciona o erro se nenhum arquivo foi selecionado
@@ -284,16 +302,18 @@ const CriarEvento = () => {
 
                 });
 
-                //Exibe o SweetAlert para sucesso
+                // Exibe o SweetAlert para sucesso com tempo de 3 segundos
                 Swal.fire({
                     title: "Sucesso!",
                     text: "O evento foi criado!",
                     icon: "success",
+                    timer: 3000, // 3 segundos
+                    showConfirmButton: false, // Remove o botão de confirmação
                     customClass: {
-                        confirmButton: 'swal2-confirm-custom'
-                    }
-
+                        popup: 'swal2-popup-custom',
+                    },
                 });
+
 
                 console.log('Resposta do servidor:', response.data);
 
@@ -312,6 +332,11 @@ const CriarEvento = () => {
                     data_inicio: '',
                     data_fim: '',
                 });
+
+                setFiles([]);
+
+                // Redireciona para recarregar o formulário
+                navigate("/criarEvento"); // Ajuste a rota para corresponder à do formulário
 
             } catch (error) {
                 console.error('Erro na requisição:', error);
@@ -421,6 +446,29 @@ const CriarEvento = () => {
                             />
 
                         </FormGroup>
+                        <FormGroup widths="equal">
+                            <Form.Input
+                                fluid
+                                error={erros.data_inicio ? { content: erros.data_inicio } : null}
+                                label={<label className="blue-label-criarEvento">Data de Início</label>}
+                                placeholder="Selecione a data de início"
+                                name="data_inicio"
+                                type="date"
+                                value={formCriarEvento.data_inicio}
+                                onChange={handleChange}
+                            />
+                            <Form.Input
+                                fluid
+                                error={erros.data_fim ? { content: erros.data_fim } : null}
+                                label={<label className="blue-label-criarEvento">Data de Fim</label>}
+                                placeholder="Selecione a data de fim"
+                                name="data_fim"
+                                type="date"
+                                value={formCriarEvento.data_fim}
+                                onChange={handleChange}
+                            />
+                        </FormGroup>
+
                         <Form.Input
                             type="file"
                             label={<label className="blue-label-criarEvento">Fotos do evento</label>}
@@ -437,7 +485,7 @@ const CriarEvento = () => {
                             maxLength={4000}
                             value={formCriarEvento.descricao}
                             onChange={handleChange}
-                            style={{ resize: "none" }} 
+                            style={{ resize: "none" }}
                         />
                     </Form>
                 </div>

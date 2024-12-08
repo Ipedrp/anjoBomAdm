@@ -27,8 +27,8 @@ function ListaEvento() {
             rua: '',
             numero: ''
         },
-        data_inicio: '11-11-2012',
-        data_fim: '11-12-2024',
+        data_inicio: '',
+        data_fim: '',
         // photos_event: [],
     });
 
@@ -253,6 +253,46 @@ function ListaEvento() {
 
     // Função para enviar o formulário editado
     const enviarEdicao = async () => {
+        // Verificar se todos os campos obrigatórios estão preenchidos
+        const novosErros = {};
+
+        if (formCriarEvento.titulo.trim() === '') {
+            novosErros.titulo = 'Título do Evento é obrigatório';
+        }
+        if (formCriarEvento.data_inicio.trim() === '') {
+            novosErros.data_inicio = 'A data de início é obrigatória';
+        }
+        if (formCriarEvento.data_fim.trim() === '') {
+            novosErros.data_fim = 'A data de fim é obrigatória';
+        }
+        if (formCriarEvento.descricao.trim() === '') {
+            novosErros.descricao = 'Descrição do Evento é obrigatória';
+        }
+        if (formCriarEvento.address.cep.trim() === '') {
+            novosErros.cep = 'O CEP é obrigatório';
+        }
+        if (formCriarEvento.address.estado.trim() === '') {
+            novosErros.estado = 'O estado é obrigatório';
+        }
+        if (formCriarEvento.address.cidade.trim() === '') {
+            novosErros.cidade = 'A cidade é obrigatória';
+        }
+        if (formCriarEvento.address.bairro.trim() === '') {
+            novosErros.bairro = 'O bairro é obrigatório';
+        }
+        if (formCriarEvento.address.rua.trim() === '') {
+            novosErros.rua = 'A rua é obrigatória';
+        }
+        if (formCriarEvento.address.numero.trim() === '') {
+            novosErros.numero = 'O número é obrigatório';
+        }
+
+        if (Object.keys(novosErros).length > 0) {
+            setErros(novosErros);
+
+            return; // Impede o envio se houver erros
+        }
+
         const formData = new FormData();
 
         // Adicionando campos do formulário ao FormData
@@ -263,11 +303,11 @@ function ListaEvento() {
         formData.append('address', JSON.stringify(formCriarEvento.address));
 
         // Adicionar URLs das imagens existentes (mantidas no backend)
-        formData.append('existingPhotos', JSON.stringify(existingPhotos));
+        // formData.append('existingPhotos', JSON.stringify(existingPhotos));
 
         // Adicionando novas imagens carregadas
         files.forEach((file) => {
-            formData.append('newPhotos', file);
+            formData.append('photos_event', file);
         });
 
         try {
@@ -328,8 +368,10 @@ function ListaEvento() {
                 {!editando ? (
                     <>
                         {!allEventos.length ? (
-                            <div className="array-vazio">
-                                <h1>No momento não há eventos! </h1>
+                            <div className="container-array-vazio">
+                                <div className="array-vazio">
+                                    <h1>No momento não há eventos! </h1>
+                                </div>
                             </div>
                         ) : isMobile ? (
                             // VERSÃO MOBILE
@@ -415,7 +457,9 @@ function ListaEvento() {
                                         <Table.Row key={evento.id}>
                                             <Table.Cell>{evento.titulo}</Table.Cell>
                                             <Table.Cell>{evento.address.rua} - {evento.address.cidade} - {evento.address.estado}</Table.Cell>
-                                            <Table.Cell>{evento.data_inicio}</Table.Cell>
+                                            <Table.Cell>
+                                                {new Date(evento.data_inicio).toLocaleDateString('pt-BR')}
+                                            </Table.Cell>
                                             <Table.Cell>
                                                 <Icon name="pencil" color="yellow" size="large"
                                                     onClick={() =>
@@ -665,6 +709,58 @@ function ListaEvento() {
                                         }}
                                     />
                                 </FormGroup>
+                                <FormGroup widths="equal">
+                                    {/* Campo de Data de Início */}
+                                    <FormInput
+                                        fluid
+                                        type="date"
+                                        label={<label className="blue-label-criarPontoColeta">Data de Início</label>}
+                                        value={formCriarEvento.data_inicio}
+                                        error={erros.data_inicio ? { content: erros.data_inicio } : undefined} // Exibe o erro se houver
+                                        onChange={(e) => {
+                                            const novaDataInicio = e.target.value;
+                                            setFormCriarEvento({
+                                                ...formCriarEvento,
+                                                data_inicio: novaDataInicio
+                                            });
+
+                                            // Validação: a data de início não pode estar vazia
+                                            if (novaDataInicio.trim() === '') {
+                                                setErros({ ...erros, data_inicio: 'A data de início é obrigatória' });
+                                            } else {
+                                                const { data_inicio, ...restErros } = erros;
+                                                setErros(restErros); // Remove o erro se o valor for válido
+                                            }
+                                        }}
+                                    />
+
+                                    {/* Campo de Data de Fim */}
+                                    <FormInput
+                                        fluid
+                                        type="date"
+                                        label={<label className="blue-label-criarPontoColeta">Data de Fim</label>}
+                                        value={formCriarEvento.data_fim}
+                                        error={erros.data_fim ? { content: erros.data_fim } : undefined} // Exibe o erro se houver
+                                        onChange={(e) => {
+                                            const novaDataFim = e.target.value;
+                                            setFormCriarEvento({
+                                                ...formCriarEvento,
+                                                data_fim: novaDataFim
+                                            });
+
+                                            // Validação: a data de fim não pode ser menor que a data de início
+                                            if (novaDataFim.trim() === '') {
+                                                setErros({ ...erros, data_fim: 'A data de fim é obrigatória' });
+                                            } else if (new Date(novaDataFim) < new Date(formCriarEvento.data_inicio)) {
+                                                setErros({ ...erros, data_fim: 'A data de fim não pode ser anterior à data de início' });
+                                            } else {
+                                                const { data_fim, ...restErros } = erros;
+                                                setErros(restErros); // Remove o erro se o valor for válido
+                                            }
+                                        }}
+                                    />
+                                </FormGroup>
+
                                 <Form.Field>
                                     <label>Imagens do Evento</label>
                                     <div className="image-edit-container">
@@ -742,3 +838,5 @@ function ListaEvento() {
 }
 
 export default ListaEvento;
+
+
