@@ -66,7 +66,6 @@ function ListaEvento() {
                 }
             });
             setAllEventos(response.data);
-            console.log("EVENTOS aqui embaixo");
             console.log(allEventos);
         } catch (error) {
             console.error('Erro ao buscar os EVENTOS:', error);
@@ -75,7 +74,6 @@ function ListaEvento() {
 
 
     const deletarEvento = async (id) => {
-        // console.log("eventoDELETADO")
         try {
             await axios.delete(`https://apianjobom.victordev.shop/admin/deletarEvento/${id}`, {
                 headers: {
@@ -91,8 +89,7 @@ function ListaEvento() {
             });
             fetchEventos();
         } catch (error) {
-            console.error('Erro ao deletar oEvento:', error);
-
+            console.error('Erro ao deletar Evento:', error);
         }
     }
 
@@ -368,11 +365,11 @@ function ListaEvento() {
                 {!editando ? (
                     <>
                         {!allEventos.length ? (
-                            <div className="container-array-vazio">
-                                <div className="array-vazio">
-                                    <h1>No momento não há eventos! </h1>
-                                </div>
+
+                            <div className="array-vazio">
+                                <h1>No momento não há eventos! </h1>
                             </div>
+
                         ) : isMobile ? (
                             // VERSÃO MOBILE
                             <div className="mobile-table-container">

@@ -13,15 +13,12 @@
     /* Ajuste a altura das linhas vazias */
 }
 
-.container-array-vazio{
-    height: 100%;
-    max-height: 600px;
-}
+
 
 .array-vazio {
     background-color: #135F99;
     color: #fff;
-    padding: 20px 0px;
+    margin: 100px 0px;
     text-align: center;
     width: 100%;
 }
@@ -70,6 +67,7 @@ tr:nth-child(even) td {
     background-color: #135F99 !important;
     color: #fff !important;
     margin-top: 30px !important;
+    margin-bottom: 40px !important;
     padding: 25px 50px !important;
     border-radius: 5px;
     transition: background-color 0.3s ease;

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Table, Icon, Menu, MenuItem, Form, Input, FormInput, FormGroup } from 'semantic-ui-react';
-import { Link } from "react-router-dom";
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from "react-router-dom";
 import NavbarAcoes from "../../../components/navbarAcoes/NavbarAcoes";
 import Header from "../../../components/header/Header";
 import axios from "axios";
@@ -31,6 +30,8 @@ function ListaPontoColeta() {
 
     const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
     const token = localStorage.getItem('authorization');
+    const navigate = useNavigate(); // Hook para navegação
+
 
     // Estado para armazenar os erros de validação
     const [erros, setErros] = useState({
@@ -46,22 +47,31 @@ function ListaPontoColeta() {
 
 
     useEffect(() => {
+        console.log("Executando fetchPontos na montagem do componente");
         fetchPontos();
     }, []);
 
     const fetchPontos = async () => {
+        console.log("Iniciando fetchPontos...");
         try {
             const response = await axios.get('https://apianjobom.victordev.shop/coletas/buscarPontosDeColeta', {
                 headers: { Authorization: token }
             });
+            console.log("Resposta de fetchPontos:", response.data); // Log para ver os dados retornados
             setPontos(response.data);
         } catch (error) {
-            console.error('Erro ao buscar os pontos de coleta:', error);
+            if (error.response?.status === 404) {
+                console.warn("Nenhum ponto encontrado (404). Configurando 'pontos' como vazio.");
+                setPontos([]); // Define o estado como vazio se o erro for 404
+            } else {
+                console.error("Erro ao buscar os pontos de coleta:", error);
+            }
         }
     };
 
     const deletarPontoColeta = async (id) => {
         try {
+            console.log("Iniciando exclusão do ponto de coleta com ID:", id);
             await axios.delete(`https://apianjobom.victordev.shop/admin/deletarPontoDeColeta/${id}`, {
                 headers: { Authorization: token }
             });
@@ -72,9 +82,12 @@ function ListaPontoColeta() {
                 timer: 1300,
                 showConfirmButton: false
             });
-            fetchPontos(); // Atualiza a lista após deletar
+
+            console.log("Exclusão concluída, chamando fetchPontos...");
+            fetchPontos(); // Atualiza os pontos de coleta
+            console.log("fetchPontos chamado após exclusão.");
         } catch (error) {
-            console.error('Erro ao deletar o ponto de coleta:', error);
+            console.error("Erro ao deletar Ponto de Coleta:", error);
         }
     };
 
@@ -90,11 +103,56 @@ function ListaPontoColeta() {
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
+                console.log("Confirmação de deleção recebida para ID:", id);
                 deletarPontoColeta(id);
             }
         });
     };
 
+
+    const verMais = async (id) => {
+        try {
+            const response = await axios.get('https://apianjobom.victordev.shop/coletas/buscarPontosDeColeta', {
+                headers: { Authorization: token },
+            });
+
+            const ponto = response.data.find((ponto) => ponto.id === id);
+
+            if (ponto) {
+                Swal.fire({
+                    title: `${ponto.name}`,
+                    html: `  
+                            <div class="ponto-coleta-details">
+                                <p> <span>CEP:</span> ${ponto.address.cep}</p>
+                                <p><span>Cidade:</span> ${ponto.address.cidade}</p>
+                                <p><span>Rua:</span> ${ponto.address.rua}</p>
+                                <p><span>Estado:</span> ${ponto.address.estado}</p>
+                                <p><span>Bairro:</span> ${ponto.address.bairro}</p>
+                                <p><span>Número:</span> ${ponto.address.numero}</p>
+                                <p><span>UrlMap:</span> ${ponto.urlMap}</p>
+                            </div>
+                        `,
+                    confirmButtonText: 'Fechar',
+                    background: '#f0f0f0',
+                    padding: '20px',
+                });
+            } else {
+                Swal.fire({
+                    title: 'Ponto de Coleta não encontrado',
+                    icon: 'error',
+                    confirmButtonText: 'Fechar',
+                });
+            }
+        } catch (error) {
+            console.error("Erro ao buscar pontos de coleta", error);
+            Swal.fire({
+                title: 'Erro ao buscar dados',
+                text: 'Não foi possível carregar os detalhes.',
+                icon: 'error',
+                confirmButtonText: 'Fechar',
+            });
+        }
+    };
 
     //Área de Edição    
 
@@ -104,7 +162,6 @@ function ListaPontoColeta() {
         const match = cleaned.match(/^(\d{5})(\d{3})$/);
         return match ? `${match[1]}-${match[2]}` : cleaned;
     }
-
 
     const validateCep = async (value) => {
         try {
@@ -250,49 +307,8 @@ function ListaPontoColeta() {
         }
     };
 
-    const verMais = async (id) => {
-        try {
-            const response = await axios.get('https://apianjobom.victordev.shop/coletas/buscarPontosDeColeta', {
-                headers: { Authorization: token },
-            });
+    console.log("todos os pontos", pontos)
 
-            const ponto = response.data.find((ponto) => ponto.id === id);
-
-            if (ponto) {
-                Swal.fire({
-                    title: `${ponto.name}`,
-                    html: `  
-                        <div class="ponto-coleta-details">
-                            <p> <span>CEP:</span> ${ponto.address.cep}</p>
-                            <p><span>Cidade:</span> ${ponto.address.cidade}</p>
-                            <p><span>Rua:</span> ${ponto.address.rua}</p>
-                            <p><span>Estado:</span> ${ponto.address.estado}</p>
-                            <p><span>Bairro:</span> ${ponto.address.bairro}</p>
-                            <p><span>Número:</span> ${ponto.address.numero}</p>
-                            <p><span>UrlMap:</span> ${ponto.urlMap}</p>
-                        </div>
-                    `,
-                    confirmButtonText: 'Fechar',
-                    background: '#f0f0f0',
-                    padding: '20px',
-                });
-            } else {
-                Swal.fire({
-                    title: 'Ponto de Coleta não encontrado',
-                    icon: 'error',
-                    confirmButtonText: 'Fechar',
-                });
-            }
-        } catch (error) {
-            console.error("Erro ao buscar pontos de coleta", error);
-            Swal.fire({
-                title: 'Erro ao buscar dados',
-                text: 'Não foi possível carregar os detalhes.',
-                icon: 'error',
-                confirmButtonText: 'Fechar',
-            });
-        }
-    };
 
 
     const indexUltimoItem = paginaAtual * itensPorPagina;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button, Form, FormGroup, TextArea, FormInput } from 'semantic-ui-react';
 import Header from "../../../components/header/Header";
 import NavbarAcoes from "../../../components/navbarAcoes/NavbarAcoes";
@@ -116,15 +116,15 @@ const CriarPontoColeta = () => {
             const newErros = { ...prevState };
             switch (name) {
                 case "name":
-                    if (value.length > 69) {
-                        newErros.name = "Máximo 70 caracteres";
+                    if (value.length > 99) {
+                        newErros.name = "Máximo 100 caracteres";
                     } else {
                         newErros.name = "";
                     }
                     break;
                 case "urlMap":
-                    if (value.length > 254) {
-                        newErros.urlMap = "Máximo 255 caracteres";
+                    if (value.length > 499) {
+                        newErros.urlMap = "Máximo 500 caracteres";
                     } else {
                         newErros.urlMap = "";
                     }
@@ -139,9 +139,9 @@ const CriarPontoColeta = () => {
                     }
                     break;
                 case "address.rua":
-                    if (value.length > 49) {
+                    if (value.length > 99) {
                         if (!newErros.address) newErros.address = {};
-                        newErros.address.rua = "Máximo 50 caracteres";
+                        newErros.address.rua = "Máximo 100 caracteres";
                     } else {
                         if (newErros.address) delete newErros.address.rua;
                         if (Object.keys(newErros.address || {}).length === 0) delete newErros.address;
@@ -157,18 +157,18 @@ const CriarPontoColeta = () => {
                     }
                     break;
                 case "address.cidade":
-                    if (value.length > 49) {
+                    if (value.length > 99) {
                         if (!newErros.address) newErros.address = {};
-                        newErros.address.cidade = "Máximo 50 caracteres";
+                        newErros.address.cidade = "Máximo 100 caracteres";
                     } else {
                         if (newErros.address) delete newErros.address.cidade;
                         if (Object.keys(newErros.address || {}).length === 0) delete newErros.address;
                     }
                     break;
                 case "address.bairro":
-                    if (value.length > 49) {
+                    if (value.length > 99) {
                         if (!newErros.address) newErros.address = {};
-                        newErros.address.bairro = "Máximo 50 caracteres";
+                        newErros.address.bairro = "Máximo 100 caracteres";
                     } else {
                         if (newErros.address) delete newErros.address.bairro;
                         if (Object.keys(newErros.address || {}).length === 0) delete newErros.address;
@@ -239,14 +239,55 @@ const CriarPontoColeta = () => {
             newErros.address = { ...newErros.address, rua: "Rua é obrigatória" };
             valid = false;
         }
+
         if (!formCriarPontoColeta.address.numero) {
             newErros.address = { ...newErros.address, numero: "Número é obrigatório" };
             valid = false;
         }
+        // Validação dos campos dentro de `address`
+        const addressFields = ["cep", "estado", "cidade", "bairro", "rua", "numero"];
+        for (const field of addressFields) {
+            const value = formCriarPontoColeta.address[field];
+            if (!value) {
+                if (!newErros.address) newErros.address = {};
+                newErros.address[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} é obrigatório`;
+                valid = false;
+            } else if (field === "estado" && value.length > 2) {
+                if (!newErros.address) newErros.address = {};
+                newErros.address.estado = "Máximo 2 caracteres";
+                valid = false;
+            } else if (field === "numero" && value.length > 6) {
+                if (!newErros.address) newErros.address = {};
+                newErros.address.numero = "Máximo 6 caracteres";
+                valid = false;
+            } else if (value.length > 99) {
+                if (!newErros.address) newErros.address = {};
+                newErros.address[field] = `Máximo 100 caracteres`;
+                valid = false;
+            } else {
+                if (newErros.address) delete newErros.address[field];
+                if (Object.keys(newErros.address || {}).length === 0) delete newErros.address;
+            }
+        }
+
+        // Verifica se o CEP é inválido
+        if (errorCep) {
+            valid = false;
+            console.log("Erro no CEP:", errorCep);
+        }
+
+
+        // Atualiza os erros
+        setErros(newErros);
+
+        // Verifica se há erros
+        if (Object.keys(newErros).length > 0) {
+            console.log("Erros detectados: ", newErros);
+            return; // Cancela o envio
+        }
+
 
         if (valid) {
-            console.log(token)
-            console.log("dados enviado", formCriarPontoColeta);
             try {
                 // Envia os dados para o backend via POST usando Axios
                 const response = await axios.post('https://apianjobom.victordev.shop/admin/criarPontoDeColeta', formCriarPontoColeta, {
@@ -257,8 +298,6 @@ const CriarPontoColeta = () => {
                     }
                 });
 
-                // console.log(response.data.token)
-
                 // Exibe o SweetAlert para sucesso
                 Swal.fire({
                     title: "Sucesso!",
@@ -268,8 +307,6 @@ const CriarPontoColeta = () => {
                     showConfirmButton: false
 
                 });
-                console.log('Resposta do servidor:', response.data);
-
                 // Limpa o formulário após o envio
                 setFormCriarPontoColeta({
                     name: '',
@@ -330,7 +367,7 @@ const CriarPontoColeta = () => {
                             placeholder="Digite o nome do ponto de coleta"
                             name="name"
                             type="text"
-                            maxLength={70}
+                            maxLength={100}
                             value={formCriarPontoColeta.name}
                             onChange={handleChange}
                         />
@@ -341,7 +378,7 @@ const CriarPontoColeta = () => {
                             placeholder="Insira a URL do mapa"
                             name="urlMap"
                             type="text"
-                            maxLength={255}
+                            maxLength={500}
                             value={formCriarPontoColeta.urlMap}
                             onChange={handleChange}
                         />
@@ -375,7 +412,7 @@ const CriarPontoColeta = () => {
                                 placeholder="Digite a cidade"
                                 name="address.cidade"
                                 type="text"
-                                maxLength={50}
+                                maxLength={100}
                                 value={formCriarPontoColeta.address.cidade}
                                 onChange={handleChange}
                             />
@@ -386,7 +423,7 @@ const CriarPontoColeta = () => {
                                 placeholder="Digite o bairro"
                                 name="address.bairro"
                                 type="text"
-                                maxLength={50}
+                                maxLength={100}
                                 value={formCriarPontoColeta.address.bairro}
                                 onChange={handleChange}
                             />
@@ -399,7 +436,7 @@ const CriarPontoColeta = () => {
                                 placeholder="Digite a rua"
                                 name="address.rua"
                                 type="text"
-                                maxLength={50}
+                                maxLength={100}
                                 value={formCriarPontoColeta.address.rua}
                                 onChange={handleChange}
                             />
