@@ -18,6 +18,9 @@
     color: #fff;
     margin: 100px 0px;
     text-align: center;
+    border: 1px solid #ddd;
+    /* Borda sutil */
+    border-radius: 8px;
     width: 100%;
 }
 
