@@ -198,26 +198,27 @@ const CriarPontoColeta = () => {
         let valid = true;
 
 
-        // Validação dos campos fora do endereço
+        // Validação do nome do ponto de coleta
         if (formCriarPontoColeta.name === "") {
-
-            newErros = { name: "Nome do ponto de coleta é obrigatório" };
+            newErros.name = "Nome do ponto de coleta é obrigatório";
             valid = false;
-            console.log("ta vazio essa porra!")
-
-        }
-        else {
-            delete newErros.name; // Limpa o erro se o name não estiver vazio
-        }
-
-        // Verifica se a descrição está vazia
-        if (formCriarPontoColeta.urlMap === "") {
-            newErros.urlMap = "Link é obrigatória"; // Adiciona o erro à urlMap
+        } else if (formCriarPontoColeta.name.length > 99) {
+            newErros.name = "O nome do ponto de colet máximo 100 caracteres ";
             valid = false;
         } else {
-            delete newErros.urlMap; // Limpa o erro se a urlMap não estiver vazia
+            delete newErros.name;
         }
 
+        // Validação da URL do mapa
+        if (formCriarPontoColeta.urlMap === "") {
+            newErros.urlMap = "O link do mapa é obrigatório";
+            valid = false;
+        } else if (formCriarPontoColeta.urlMap.length > 499) {
+            newErros.urlMap = "O link do mapa não pode exceder 499 caracteres";
+            valid = false;
+        } else {
+            delete newErros.urlMap;
+        }
         // Validação dos campos dentro de `address`
         if (!formCriarPontoColeta.address.cep) {
             newErros.address = { cep: "CEP é obrigatório" };

@@ -49,9 +49,7 @@ const CriarEvento = () => {
         arquivos: "", // Novo campo para erros de arquivos
     });
 
-
     const [errorCep, setErrorCep] = useState(""); // Para o erro de CEP
-
 
     const formatCEP = (cep) => {
         const cleaned = ('' + cep).replace(/\D/g, ''); // Remove qualquer caractere não numérico
@@ -136,8 +134,8 @@ const CriarEvento = () => {
             const newErros = { ...prevState };
             switch (name) {
                 case "titulo":
-                    if (value.length > 69) {
-                        newErros.titulo = "Máximo 70 caracteres";
+                    if (value.length > 99) {
+                        newErros.titulo = "Máximo 100 caracteres";
                     } else {
                         newErros.titulo = "";
                     }
@@ -159,9 +157,9 @@ const CriarEvento = () => {
                     }
                     break;
                 case "address.rua":
-                    if (value.length > 49) {
+                    if (value.length > 99) {
                         if (!newErros.address) newErros.address = {};
-                        newErros.address.rua = "Máximo 50 caracteres";
+                        newErros.address.rua = "Máximo 100 caracteres";
                     } else {
                         if (newErros.address) delete newErros.address.rua;
                         if (Object.keys(newErros.address || {}).length === 0) delete newErros.address;
@@ -177,18 +175,18 @@ const CriarEvento = () => {
                     }
                     break;
                 case "address.cidade":
-                    if (value.length > 49) {
+                    if (value.length > 99) {
                         if (!newErros.address) newErros.address = {};
-                        newErros.address.cidade = "Máximo 50 caracteres";
+                        newErros.address.cidade = "Máximo 100 caracteres";
                     } else {
                         if (newErros.address) delete newErros.address.cidade;
                         if (Object.keys(newErros.address || {}).length === 0) delete newErros.address;
                     }
                     break;
                 case "address.bairro":
-                    if (value.length > 49) {
+                    if (value.length > 99) {
                         if (!newErros.address) newErros.address = {};
-                        newErros.address.bairro = "Máximo 50 caracteres";
+                        newErros.address.bairro = "Máximo 100 caracteres";
                     } else {
                         if (newErros.address) delete newErros.address.bairro;
                         if (Object.keys(newErros.address || {}).length === 0) delete newErros.address;
@@ -221,61 +219,130 @@ const CriarEvento = () => {
         let newErros = { titulo: "", descricao: "", address: {}, arquivos: "" };
         let valid = true;
 
-        // Validação dos campos fora do endereço
-        if (formCriarEvento.titulo === "") {
+        // Validação dos campos do formulário
+        if (!formCriarEvento.titulo) {
             newErros.titulo = "Título é obrigatório";
             valid = false;
+        } else if (formCriarEvento.titulo.length > 99) {
+            newErros.titulo = "Máximo 100 caracteres";
+            valid = false;
         }
 
-        // Verifica se a descrição está vazia
-        if (formCriarEvento.descricao === "") {
+        if (!formCriarEvento.descricao) {
             newErros.descricao = "Descrição é obrigatória";
             valid = false;
+        } else if (formCriarEvento.descricao.length > 4000) {
+            newErros.descricao = "Máximo 4000 caracteres";
+            valid = false;
         }
 
-        // Validação dos campos dentro de `address`
-        if (!formCriarEvento.address.cep) {
-            newErros.address.cep = "CEP é obrigatório";
-            valid = false;
-        }
-        if (!formCriarEvento.address.estado) {
-            newErros.address.estado = "Estado é obrigatório";
-            valid = false;
-        }
-        if (!formCriarEvento.address.cidade) {
-            newErros.address.cidade = "Cidade é obrigatória";
-            valid = false;
-        }
-        if (!formCriarEvento.address.bairro) {
-            newErros.address.bairro = "Bairro é obrigatório";
-            valid = false;
-        }
-        if (!formCriarEvento.address.rua) {
-            newErros.address.rua = "Rua é obrigatória";
-            valid = false;
-        }
-        if (!formCriarEvento.address.numero) {
-            newErros.address.numero = "Número é obrigatório";
-            valid = false;
-        }
+
+        // Validação do campo 'data_inicio'
         if (!formCriarEvento.data_inicio) {
             newErros.data_inicio = "Data de início é obrigatória";
             valid = false;
         }
 
+        // Validação do campo 'data_fim'
         if (!formCriarEvento.data_fim) {
             newErros.data_fim = "Data de fim é obrigatória";
             valid = false;
         }
 
-        // Validação dos arquivos
-        if (files.length === 0) {
-            newErros.arquivos = "Ao menos uma foto deve ser selecionada."; // Adiciona o erro se nenhum arquivo foi selecionado
+        // Verificação de datas: se a data de fim for anterior à data de início
+        if (formCriarEvento.data_inicio && formCriarEvento.data_fim) {
+            const dataInicio = new Date(formCriarEvento.data_inicio);
+            const dataFim = new Date(formCriarEvento.data_fim);
+
+            if (dataFim < dataInicio) {
+                newErros.data_fim = "A data de fim deve ser igual ou posterior à data de início";
+                valid = false;
+            }
+        }
+
+        // Validação do restante dos campos do formulário (como já está implementado)
+
+        const { cep, estado, cidade, bairro, rua, numero } = formCriarEvento.address;
+
+        // Validação do campo 'cep'
+        if (!cep) {
+            newErros.address.cep = "CEP é obrigatório";
+            valid = false;
+        } else if (cep.length > 9) {
+            newErros.address.cep = "Máximo 9 caracteres";
+            valid = false;
+        } else {
+            // Valida o CEP usando a API
+            try {
+                const response = await axios.get(`https://viacep.com.br/ws/${cep.replace(/\D/g, '')}/json/`);
+                if (!response.data || response.data.erro) {
+                    newErros.address.cep = "CEP inválido";
+                    valid = false;
+                }
+            } catch (error) {
+                console.error("Erro ao buscar o CEP:", error);
+                newErros.address.cep = "Erro na verificação do CEP";
+                valid = false;
+            }
+        }
+        // Validação do campo 'estado'
+        if (!estado) {
+            newErros.address.estado = "Estado é obrigatório";
+            valid = false;
+        } else if (estado.length > 2) {
+            newErros.address.estado = "Máximo 2 caracteres";
             valid = false;
         }
 
-        // Atualiza o estado de erros
+        // Validação do campo 'cidade'
+        if (!cidade) {
+            newErros.address.cidade = "Cidade é obrigatória";
+            valid = false;
+        } else if (cidade.length > 99) {
+            newErros.address.cidade = "Máximo 100 caracteres";
+            valid = false;
+        }
+
+        // Validação do campo 'bairro'
+        if (!bairro) {
+            newErros.address.bairro = "Bairro é obrigatório";
+            valid = false;
+        } else if (bairro.length > 99) {
+            newErros.address.bairro = "Máximo 100 caracteres";
+            valid = false;
+        }
+
+        // Validação do campo 'rua'
+        if (!rua) {
+            newErros.address.rua = "Rua é obrigatória";
+            valid = false;
+        } else if (rua.length > 99) {
+            newErros.address.rua = "Máximo 100 caracteres";
+            valid = false;
+        }
+
+        // Validação do campo 'numero'
+        if (!numero) {
+            newErros.address.numero = "Número é obrigatório";
+            valid = false;
+        } else if (numero.length > 6) {
+            newErros.address.numero = "Máximo 6 caracteres";
+            valid = false;
+        }
+
+        // Validação dos arquivos
+        if (files.length === 0) {
+            newErros.arquivos = "Ao menos uma foto deve ser selecionada.";
+            valid = false;
+        }
+
+
+
+        // Atualiza os erros
         setErros(newErros);
+
+        // Se todos os campos forem válidos, continua com o envio do formulário
+
 
         if (valid) {
 
@@ -371,7 +438,7 @@ const CriarEvento = () => {
                             placeholder="Digite o título do evento"
                             name="titulo"
                             type="text"
-                            maxLength={70}
+                            maxLength={100}
                             value={formCriarEvento.titulo}
                             onChange={handleChange}
                         />
@@ -405,7 +472,7 @@ const CriarEvento = () => {
                                 placeholder="Digite sua cidade"
                                 name="address.cidade"
                                 type="text"
-                                maxLength={50}
+                                maxLength={100}
                                 value={formCriarEvento.address.cidade}
                                 onChange={handleChange}
                             />
@@ -416,7 +483,7 @@ const CriarEvento = () => {
                                 placeholder="Digite seu bairro"
                                 name="address.bairro"
                                 type="text"
-                                maxLength={50}
+                                maxLength={100}
                                 value={formCriarEvento.address.bairro}
                                 onChange={handleChange}
                             />
@@ -429,7 +496,7 @@ const CriarEvento = () => {
                                 placeholder="Digite sua rua"
                                 name="address.rua"
                                 type="text"
-                                maxLength={50}
+                                maxLength={100}
                                 value={formCriarEvento.address.rua}
                                 onChange={handleChange}
                             />
