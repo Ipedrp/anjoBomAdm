@@ -58,6 +58,23 @@ function ListaDoacoesRetirar() {
         }
     };
 
+    const confirmarAtualizacao = (id) => {
+        Swal.fire({
+            title: 'Tem certeza?',
+            text: "Você deseja atualizar esta cesta?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sim, atualizar!',
+            cancelButtonText: 'Cancelar',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                atualizarCesta(id);
+            }
+        });
+    };
+
     const verMais = async (id) => {
         try {
             const response = await axios.get('https://apianjobom.victordev.shop/admin/cestas', {
@@ -178,7 +195,7 @@ function ListaDoacoesRetirar() {
                                             color="green"
                                             size="large"
                                             style={{ cursor: 'pointer' }}
-                                            onClick={() => atualizarCesta(doacao.id)}
+                                            onClick={() => confirmarAtualizacao(doacao.id)}
                                         />}
                                     <Icon
                                         name="eye"
@@ -259,7 +276,7 @@ function ListaDoacoesRetirar() {
                                                 color="green"
                                                 size="large"
                                                 style={{ cursor: 'pointer' }}
-                                                onClick={() => atualizarCesta(doacao.id)}
+                                                onClick={() => confirmarAtualizacao(doacao.id)}
                                             />}
                                         <Icon
                                             name="eye"
