@@ -1,13 +1,8 @@
-/* 
-.mixed-chart {
-    display: flex !important;
-    justify-content: center !important;
-    margin: 40px auto;
+.title-grafic {
+    color: #135F99;
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-weight: bold;
+    text-align: center;
 }
- */
-
-/* div.mixed-chart {
-    display: flex;
-    justify-content: center;
-    margin: 90px auto !important;
-} */

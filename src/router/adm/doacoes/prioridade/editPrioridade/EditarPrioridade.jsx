@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Grid, Card, Icon, Button, FormField, Select } from 'semantic-ui-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate} from 'react-router-dom';
 import Header from '../../../../../components/header/Header';
 import NavbarAcoes from '../../../../../components/navbarAcoes/NavbarAcoes';
 import 'semantic-ui-css/semantic.min.css';
@@ -15,17 +15,20 @@ const options = [
 ];
 
 const EditarPrioridade = () => {
-    
+
     useEffect(() => {
         window.scrollTo(0, 0); // Rola para o topo ao montar o componente
     }, []);
-    
+
     const [todosProdutos, setProdutos] = useState([]);
     const [prioridades, setPrioridades] = useState({});
 
     useEffect(() => {
         fetchProdutos();
     }, []);
+
+    const navigate = useNavigate(); // Hook para navegação
+
 
     const fetchProdutos = async () => {
         try {
@@ -90,7 +93,7 @@ const EditarPrioridade = () => {
 
     const handleSalvarAlteracoes = async () => {
         try {
-            
+
             await Promise.all(
                 todosProdutos.map(produto =>
                     salvarAlteracoes(produto._id, prioridades[produto.name])
@@ -104,6 +107,8 @@ const EditarPrioridade = () => {
                 timer: 1300,
                 showConfirmButton: false,
             });
+            // Redireciona para recarregar jsx Prioridade.jsx
+            navigate("/prioridade"); 
         } catch (error) {
             Swal.fire({
                 title: 'Erro!',
@@ -135,7 +140,7 @@ const EditarPrioridade = () => {
                                             className='brabobrabo'
                                             control={Select}
                                             options={options}
-                                            value={prioridades[produto.name]} 
+                                            value={prioridades[produto.name]}
                                             onChange={(e, { value }) => setPrioridades(prev => ({
                                                 ...prev,
                                                 [produto.name]: value,

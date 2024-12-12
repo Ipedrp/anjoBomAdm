@@ -4,15 +4,17 @@ import NavbarAcoes from "../../../components/navbarAcoes/NavbarAcoes";
 import Chart from "react-apexcharts";
 import axios from "axios";
 import MediaQuery from "react-responsive";
+import './Inital.css'
 
 function Initial() {
 
     useEffect(() => {
         window.scrollTo(0, 0); // Rola para o topo ao montar o componente
     }, []);
-    
+
     const [totalPontoColeta, setTotalPontoColeta] = useState([]);
     const [totalEvento, setTotalEvento] = useState([]);
+    const [totalDoacao, setTotalDoacao] = useState([]);
     const token = localStorage.getItem("authorization");
 
     useEffect(() => {
@@ -22,6 +24,28 @@ function Initial() {
     useEffect(() => {
         fetchTotalEvento();
     }, []);
+
+
+    useEffect(() => {
+        window.scrollTo(0, 0); // Rola para o topo ao montar o componente
+    }, []);
+
+
+    useEffect(() => {
+        fetchDoacoes();
+    }, []);
+
+    const fetchDoacoes = async () => {
+        try {
+            const response = await axios.get('https://apianjobom.victordev.shop/admin/cestas', {
+                headers: { Authorization: token }
+            });
+            setTotalDoacao(response.data);
+
+        } catch (error) {
+            console.error('Erro ao buscar doações:', error);
+        }
+    };
 
     const fetchTotalPontoColeta = async () => {
         try {
@@ -68,19 +92,45 @@ function Initial() {
             },
             {
                 name: "Doações",
-                data: [2], // Apenas um valor
+                data: [totalDoacao.length], // Apenas um valor
             },
         ],
     };
-    
-    
+
+    // Processamento dos dados
+    const produtoQuantidades = {};
+    totalDoacao.forEach((doador) => {
+        const items = doador.items?.produtos || []; // Evitar erros se items não existir
+        items.forEach((item) => {
+            if (produtoQuantidades[item.name]) {
+                produtoQuantidades[item.name] += item.quantity;
+            } else {
+                produtoQuantidades[item.name] = item.quantity;
+            }
+        });
+    });
+
+    const categorias = Object.keys(produtoQuantidades); // Nomes dos produtos
+    const valores = Object.values(produtoQuantidades); // Quantidades correspondentes
+    console.log("Categorias (labels):", categorias);
+    console.log("Valores (quantidades):", valores);
+
+    const state3 = {
+        options: {
+            chart: {
+                type: "donut",
+            },
+            labels: ['Alimentos', 'Bebidas', 'Brinquedos', 'Roupas', 'Medicamentos', 'Higiênicos'], // Nomes dos produtos
+        },
+        series: valores, // Quantidades dos produtos
+    };
 
     return (
         <>
             <NavbarAcoes />
             <Header title2={"Home"} />
 
-            <div className="mixed-chart" style={{ display: "flex", justifyContent: "center", margin: "90px auto"} }>
+            <div className="mixed-chart" style={{ display: "flex", justifyContent: "center", margin: "90px auto" }}>
                 <MediaQuery maxWidth={768}>
                     <Chart options={state.options} series={state.series} type="bar" width="100%" height="400" />
                 </MediaQuery>
@@ -88,6 +138,15 @@ function Initial() {
                     <Chart options={state.options} series={state.series} type="bar" width="700" height="300" />
                 </MediaQuery>
             </div>
+
+           
+            <h1 className="title-grafic">Doações</h1>
+            
+
+            <div style={{ display: "flex", justifyContent: "center", margin: "90px auto" }}>
+                <Chart options={state3.options} series={state3.series} type="donut" width="600" />
+            </div>
+
 
         </>
     );
