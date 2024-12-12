@@ -8,6 +8,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2'
 
 const CriarEvento = () => {
+
+    useEffect(() => {
+        window.scrollTo(0, 0); // Rola para o topo ao montar o componente
+    }, []);
+
     // Estado principal do formulário de criação de evento
     const [formCriarEvento, setFormCriarEvento] = useState({
         titulo: '', // Título do evento

@@ -16,6 +16,10 @@ const options = [
 
 const EditarPrioridade = () => {
     
+    useEffect(() => {
+        window.scrollTo(0, 0); // Rola para o topo ao montar o componente
+    }, []);
+    
     const [todosProdutos, setProdutos] = useState([]);
     const [prioridades, setPrioridades] = useState({});
 

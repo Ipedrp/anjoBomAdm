@@ -11,6 +11,10 @@ import './ListaDoacoesRetirar.css';
 
 function ListaDoacoesRetirar() {
 
+    useEffect(() => {
+        window.scrollTo(0, 0); // Rola para o topo ao montar o componente
+    }, []);
+
     const [doacoes, setDoacoes] = useState([]);
 
     const token = localStorage.getItem('authorization')
@@ -52,6 +56,7 @@ function ListaDoacoesRetirar() {
             });
 
             fetchDoacoes();
+            window.scrollTo(0, 0);
         } catch (error) {
             console.error('Erro ao atualizar a cesta:', error);
             alert('Erro ao atualizar a cesta.');

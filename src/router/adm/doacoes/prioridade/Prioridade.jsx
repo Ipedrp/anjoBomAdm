@@ -10,6 +10,10 @@ import './Prioridade.css';
 
 const Prioridade = () => {
 
+    useEffect(() => {
+        window.scrollTo(0, 0); // Rola para o topo ao montar o componente
+    }, []);
+
     const [todosProdutos, setProdutos] = useState([]);
 
 

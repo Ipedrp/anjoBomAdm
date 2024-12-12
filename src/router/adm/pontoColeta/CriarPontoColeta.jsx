@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Form, FormGroup, TextArea, FormInput } from 'semantic-ui-react';
 import Header from "../../../components/header/Header";
 import NavbarAcoes from "../../../components/navbarAcoes/NavbarAcoes";
@@ -8,6 +8,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2'
 
 const CriarPontoColeta = () => {
+
+    useEffect(() => {
+        window.scrollTo(0, 0); // Rola para o topo ao montar o componente
+    }, []);
 
     const [formCriarPontoColeta, setFormCriarPontoColeta] = useState({
         name: '',

@@ -10,6 +10,11 @@ import { useMediaQuery } from 'react-responsive';
 import './ListaPontoColeta.css';
 
 function ListaPontoColeta() {
+
+    useEffect(() => {
+        window.scrollTo(0, 0); // Rola para o topo ao montar o componente
+    }, []);
+
     const [paginaAtual, setPaginaAtual] = useState(1);
     const itensPorPagina = 5;
     const [pontos, setPontos] = useState([]);
@@ -89,6 +94,8 @@ function ListaPontoColeta() {
             console.log("Exclusão concluída, chamando fetchPontos...");
             fetchPontos(); // Atualiza os pontos de coleta
             console.log("fetchPontos chamado após exclusão.");
+            // Rolar para o topo diretamente
+            window.scrollTo(0, 0);
         } catch (error) {
             console.error("Erro ao deletar Ponto de Coleta:", error);
         }
@@ -234,6 +241,8 @@ function ListaPontoColeta() {
         setEditando(false);
         setPontoParaEditar(null);
         setErros('');
+        // Rolar para o topo diretamente
+        window.scrollTo(0, 0);
     };
 
     // Função para enviar o formulário editado
@@ -275,7 +284,7 @@ function ListaPontoColeta() {
         } else if (cep.length < 9) {
             novosErros.cep = 'CEP inválido, deve conter 9 caracteres';
             encontrouErros = true;
-        } else if(errorCep){
+        } else if (errorCep) {
             novosErros.cep = 'CEP inválido!';
             encontrouErros = true;
         }
@@ -340,6 +349,7 @@ function ListaPontoColeta() {
         // Se houver erros, interrompe o envio
         if (encontrouErros) {
             console.log("Erros encontrados:", novosErros);
+            window.scrollTo(0, 0);
             return;
         }
 
@@ -370,6 +380,7 @@ function ListaPontoColeta() {
 
             fetchPontos(); // Recarrega a lista
             setEditando(false); // Fecha o formulário de edição
+            window.scrollTo(0, 0);
         } catch (error) {
             console.error('Erro ao editar o ponto de coleta:', error);
             Swal.fire({

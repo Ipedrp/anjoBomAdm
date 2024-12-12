@@ -11,6 +11,11 @@ import { useMediaQuery } from 'react-responsive';
 import './ListaEvento.css';
 
 function ListaEvento() {
+
+    useEffect(() => {
+        window.scrollTo(0, 0); // Rola para o topo ao montar o componente
+    }, []);
+    
     const [paginaAtual, setPaginaAtual] = useState(1);
     const itensPorPagina = 5;
     const [allEventos, setAllEventos] = useState([]);
@@ -91,6 +96,7 @@ function ListaEvento() {
                 showConfirmButton: false
             });
             fetchEventos();
+            window.scrollTo(0, 0);
         } catch (error) {
             console.error('Erro ao deletar Evento:', error);
         }
@@ -192,7 +198,7 @@ function ListaEvento() {
                 setErrorCep(""); // Limpa o erro se for válido
             } else {
                 // Atualiza com a mensagem de erro
-                
+
                 setErrorCep('CEP inválido');
             }
         } catch (error) {
@@ -241,6 +247,7 @@ function ListaEvento() {
         setEditando(false);
         setEventoParaEditar(null);
         setErros('');
+        window.scrollTo(0, 0);
     };
 
     // Adiciona novas imagens ao estado `files`
@@ -273,7 +280,7 @@ function ListaEvento() {
             novosErros.cep = 'CEP é obrigatório';
         } else if (formCriarEvento.address.cep.length !== 9) {
             novosErros.cep = 'CEP inválido, deve conter 9 caracteres';
-        } else if(errorCep){
+        } else if (errorCep) {
             novosErros.cep = 'CEP inválido';
         }
 
@@ -352,6 +359,7 @@ function ListaEvento() {
         // Bloqueia a submissão se o formulário for inválido ou o CEP for inválido
         if (!formValido) {
             console.log("Formulário inválido ou CEP inválido. Não foi enviado.");
+            window.scrollTo(0, 0);
             return;
         }
 
@@ -401,6 +409,7 @@ function ListaEvento() {
 
             fetchEventos(); // Atualiza os dados após a edição
             setEditando(false); // Volta para o estado inicial (não editando)
+            window.scrollTo(0, 0);
         } catch (error) {
             console.error('Erro ao editar o evento:', error.response?.data || error.message);
             Swal.fire({
@@ -452,10 +461,19 @@ function ListaEvento() {
                                             <strong>Título:</strong> {evento.titulo}
                                         </div>
                                         <div className="mobile-table-cell">
-                                            <strong>Endereço:</strong> {evento.address.rua} - {evento.address.cidade} - {evento.address.estado}
+                                            <strong>Cidade:</strong> {evento.address.cidade} - {evento.address.estado}
                                         </div>
                                         <div className="mobile-table-cell">
-                                            <strong>Data:</strong> {evento.data}
+                                            <strong>Rua:</strong> {evento.address.rua}
+                                        </div>
+                                        <div className="mobile-table-cell">
+                                            <strong>Bairro:</strong> {evento.address.bairro}
+                                        </div>
+                                        <div className="mobile-table-cell">
+                                            <strong>Número:</strong> {evento.address.numero}
+                                        </div>
+                                        <div className="mobile-table-cell">
+                                            <strong>Data:</strong> {new Date(evento.data_inicio).toLocaleDateString('pt-BR')}
                                         </div>
                                         <div className="mobile-table-actions">
                                             <Icon name="pencil" color="yellow" size="large"

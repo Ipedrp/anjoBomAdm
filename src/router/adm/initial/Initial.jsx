@@ -6,6 +6,11 @@ import axios from "axios";
 import MediaQuery from "react-responsive";
 
 function Initial() {
+
+    useEffect(() => {
+        window.scrollTo(0, 0); // Rola para o topo ao montar o componente
+    }, []);
+    
     const [totalPontoColeta, setTotalPontoColeta] = useState([]);
     const [totalEvento, setTotalEvento] = useState([]);
     const token = localStorage.getItem("authorization");
