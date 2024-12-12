@@ -223,6 +223,9 @@ const CriarEvento = () => {
         if (!formCriarEvento.titulo) {
             newErros.titulo = "Título é obrigatório";
             valid = false;
+        } else if (formCriarEvento.titulo.length < 10) {
+            newErros.titulo = "Mínimo 10 caracteres";
+            valid = false;
         } else if (formCriarEvento.titulo.length > 99) {
             newErros.titulo = "Máximo 100 caracteres";
             valid = false;
@@ -231,11 +234,13 @@ const CriarEvento = () => {
         if (!formCriarEvento.descricao) {
             newErros.descricao = "Descrição é obrigatória";
             valid = false;
+        } else if (formCriarEvento.descricao.length < 10) {
+            newErros.descricao = "Mínimo 10 caracteres";
+            valid = false;
         } else if (formCriarEvento.descricao.length > 4000) {
             newErros.descricao = "Máximo 4000 caracteres";
             valid = false;
         }
-
 
         // Validação do campo 'data_inicio'
         if (!formCriarEvento.data_inicio) {
@@ -289,6 +294,9 @@ const CriarEvento = () => {
         if (!estado) {
             newErros.address.estado = "Estado é obrigatório";
             valid = false;
+        } else if (estado.length < 2) {
+            newErros.address.estado = "Mínimo 2 caracteres";
+            valid = false;
         } else if (estado.length > 2) {
             newErros.address.estado = "Máximo 2 caracteres";
             valid = false;
@@ -297,6 +305,9 @@ const CriarEvento = () => {
         // Validação do campo 'cidade'
         if (!cidade) {
             newErros.address.cidade = "Cidade é obrigatória";
+            valid = false;
+        } else if (cidade.length < 3) {
+            newErros.address.cidade = "Mínimo 3 caracteres";
             valid = false;
         } else if (cidade.length > 99) {
             newErros.address.cidade = "Máximo 100 caracteres";
@@ -307,6 +318,9 @@ const CriarEvento = () => {
         if (!bairro) {
             newErros.address.bairro = "Bairro é obrigatório";
             valid = false;
+        } else if (bairro.length < 3) {
+            newErros.address.bairro = "Mínimo 3 caracteres";
+            valid = false;
         } else if (bairro.length > 99) {
             newErros.address.bairro = "Máximo 100 caracteres";
             valid = false;
@@ -315,6 +329,9 @@ const CriarEvento = () => {
         // Validação do campo 'rua'
         if (!rua) {
             newErros.address.rua = "Rua é obrigatória";
+            valid = false;
+        } else if (rua.length < 3) {
+            newErros.address.rua = "Mínimo 3 caracteres";
             valid = false;
         } else if (rua.length > 99) {
             newErros.address.rua = "Máximo 100 caracteres";
@@ -342,8 +359,10 @@ const CriarEvento = () => {
         setErros(newErros);
 
         // Se todos os campos forem válidos, continua com o envio do formulário
-
-
+        console.log("tamnho de cidade: ", cidade.length)
+        console.log("tamnho de rua: ", rua.length)
+        console.log("tamnho de bairro: ", bairro.length)
+        console.log("ver erros: ", erros);
         if (valid) {
 
             const formData = new FormData();
@@ -403,7 +422,7 @@ const CriarEvento = () => {
                 setFiles([]);
 
                 // Redireciona para recarregar o formulário
-                navigate("/criarEvento"); // Ajuste a rota para corresponder à do formulário
+                navigate("/listaEvento"); // Ajuste a rota para corresponder à do formulário
 
             } catch (error) {
                 console.error('Erro na requisição:', error);
@@ -439,6 +458,7 @@ const CriarEvento = () => {
                             name="titulo"
                             type="text"
                             maxLength={100}
+                            minLength={10}
                             value={formCriarEvento.titulo}
                             onChange={handleChange}
                         />
@@ -450,6 +470,7 @@ const CriarEvento = () => {
                             name="address.cep"
                             type="text"
                             maxLength={9}
+                            minLength={9}
                             value={formCriarEvento.address.cep}
                             onChange={handleChange}
                         />
@@ -462,6 +483,7 @@ const CriarEvento = () => {
                                 name="address.estado"
                                 type="text"
                                 maxLength={2}
+                                minLength={2}
                                 value={formCriarEvento.address.estado}
                                 onChange={handleChange}
                             />
@@ -473,6 +495,7 @@ const CriarEvento = () => {
                                 name="address.cidade"
                                 type="text"
                                 maxLength={100}
+                                minLength={3}
                                 value={formCriarEvento.address.cidade}
                                 onChange={handleChange}
                             />
@@ -484,6 +507,7 @@ const CriarEvento = () => {
                                 name="address.bairro"
                                 type="text"
                                 maxLength={100}
+                                minLength={3}
                                 value={formCriarEvento.address.bairro}
                                 onChange={handleChange}
                             />
@@ -497,6 +521,7 @@ const CriarEvento = () => {
                                 name="address.rua"
                                 type="text"
                                 maxLength={100}
+                                minLength={3}
                                 value={formCriarEvento.address.rua}
                                 onChange={handleChange}
                             />
@@ -508,6 +533,7 @@ const CriarEvento = () => {
                                 name="address.numero"
                                 type="text"
                                 maxLength={6}
+                                minLength={1}
                                 value={formCriarEvento.address.numero}
                                 onChange={handleChange}
                             />
@@ -550,6 +576,7 @@ const CriarEvento = () => {
                             placeholder="Descreva o que este evento irá realizar..."
                             name="descricao"
                             maxLength={4000}
+                            minLength={10}
                             value={formCriarEvento.descricao}
                             onChange={handleChange}
                             style={{ resize: "none" }}

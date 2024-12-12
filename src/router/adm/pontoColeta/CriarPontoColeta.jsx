@@ -4,7 +4,7 @@ import Header from "../../../components/header/Header";
 import NavbarAcoes from "../../../components/navbarAcoes/NavbarAcoes";
 import axios from 'axios';
 import './CriarPontoColeta.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2'
 
 const CriarPontoColeta = () => {
@@ -22,17 +22,15 @@ const CriarPontoColeta = () => {
         }
     });
 
+    const navigate = useNavigate(); // Hook para navegação
     const token = localStorage.getItem('authorization')
-
     const [erros, setErros] = useState({
         address: {
             cep: '',
             // outros campos de erro do endereço, se necessário
         }
     });
-
     const [errorCep, setErrorCep] = useState(""); // Para o erro de CEP
-
 
     const formatCEP = (cep) => {
         const cleaned = ('' + cep).replace(/\D/g, ''); // Remove qualquer caractere não numérico
@@ -74,7 +72,6 @@ const CriarPontoColeta = () => {
             console.error("Erro ao buscar o CEP:", error);
         }
     };
-
 
     // Função para lidar com a mudança de input
     const handleChange = async (e) => {
@@ -194,81 +191,64 @@ const CriarPontoColeta = () => {
 
     // Função para enviar o formulário
     const EnviarPontoColeta = async () => {
-        let newErros = { ...erros };
+        let newErros = {};
         let valid = true;
 
-
         // Validação do nome do ponto de coleta
-        if (formCriarPontoColeta.name === "") {
+        if (!formCriarPontoColeta.name || formCriarPontoColeta.name.trim() === '') {
             newErros.name = "Nome do ponto de coleta é obrigatório";
             valid = false;
-        } else if (formCriarPontoColeta.name.length > 99) {
-            newErros.name = "O nome do ponto de colet máximo 100 caracteres ";
+        } else if (formCriarPontoColeta.name.length < 10) {
+            newErros.name = "Nome deve ter no mínimo 10 caracteres";
             valid = false;
-        } else {
-            delete newErros.name;
+        } else if (formCriarPontoColeta.name.length > 99) {
+            newErros.name = "Nome deve ter no máximo 100 caracteres";
+            valid = false;
         }
 
         // Validação da URL do mapa
-        if (formCriarPontoColeta.urlMap === "") {
+        if (!formCriarPontoColeta.urlMap || formCriarPontoColeta.urlMap.trim() === '') {
             newErros.urlMap = "O link do mapa é obrigatório";
             valid = false;
+        } else if (formCriarPontoColeta.urlMap.length < 10) {
+            newErros.urlMap = "URL deve ter no mínimo 10 caracteres";
+            valid = false;
         } else if (formCriarPontoColeta.urlMap.length > 499) {
-            newErros.urlMap = "O link do mapa não pode exceder 499 caracteres";
-            valid = false;
-        } else {
-            delete newErros.urlMap;
-        }
-        // Validação dos campos dentro de `address`
-        if (!formCriarPontoColeta.address.cep) {
-            newErros.address = { cep: "CEP é obrigatório" };
-            valid = false;
-        }
-        if (!formCriarPontoColeta.address.estado) {
-            newErros.address = { ...newErros.address, estado: "Estado é obrigatório" };
-            valid = false;
-        }
-        if (!formCriarPontoColeta.address.cidade) {
-            newErros.address = { ...newErros.address, cidade: "Cidade é obrigatória" };
-            valid = false;
-        }
-        if (!formCriarPontoColeta.address.bairro) {
-            newErros.address = { ...newErros.address, bairro: "Bairro é obrigatório" };
-            valid = false;
-        }
-        if (!formCriarPontoColeta.address.rua) {
-            newErros.address = { ...newErros.address, rua: "Rua é obrigatória" };
+            newErros.urlMap = "URL deve ter no máximo 500 caracteres";
             valid = false;
         }
 
-        if (!formCriarPontoColeta.address.numero) {
-            newErros.address = { ...newErros.address, numero: "Número é obrigatório" };
-            valid = false;
-        }
-        // Validação dos campos dentro de `address`
-        const addressFields = ["cep", "estado", "cidade", "bairro", "rua", "numero"];
-        for (const field of addressFields) {
+        // Validação dos campos do endereço
+        const addressFields = {
+            cep: { min: 9, max: 9, required: true },
+            estado: { min: 2, max: 2, required: true },
+            cidade: { min: 3, max: 100, required: true },
+            bairro: { min: 3, max: 100, required: true },
+            rua: { min: 3, max: 100, required: true },
+            numero: { min: 1, max: 6, required: true },
+        };
+
+        newErros.address = {};
+
+        for (const field in addressFields) {
+            const { min, max, required } = addressFields[field];
             const value = formCriarPontoColeta.address[field];
-            if (!value) {
-                if (!newErros.address) newErros.address = {};
+
+            if (required && (!value || value.trim() === '')) {
                 newErros.address[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} é obrigatório`;
                 valid = false;
-            } else if (field === "estado" && value.length > 2) {
-                if (!newErros.address) newErros.address = {};
-                newErros.address.estado = "Máximo 2 caracteres";
+            } else if (value.length < min) {
+                newErros.address[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} deve ter no mínimo ${min} caracteres`;
                 valid = false;
-            } else if (field === "numero" && value.length > 6) {
-                if (!newErros.address) newErros.address = {};
-                newErros.address.numero = "Máximo 6 caracteres";
+            } else if (value.length > max) {
+                newErros.address[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} deve ter no máximo ${max} caracteres`;
                 valid = false;
-            } else if (value.length > 99) {
-                if (!newErros.address) newErros.address = {};
-                newErros.address[field] = `Máximo 100 caracteres`;
-                valid = false;
-            } else {
-                if (newErros.address) delete newErros.address[field];
-                if (Object.keys(newErros.address || {}).length === 0) delete newErros.address;
             }
+        }
+
+        // Remove a chave `address` se não houver erros em seus campos
+        if (Object.keys(newErros.address).length === 0) {
+            delete newErros.address;
         }
 
         // Verifica se o CEP é inválido
@@ -277,82 +257,73 @@ const CriarPontoColeta = () => {
             console.log("Erro no CEP:", errorCep);
         }
 
-
         // Atualiza os erros
         setErros(newErros);
 
-        // Verifica se há erros
-        if (Object.keys(newErros).length > 0) {
+        // Impede o envio se houver erros
+        if (!valid) {
             console.log("Erros detectados: ", newErros);
-            return; // Cancela o envio
+            return;
         }
 
-
-        if (valid) {
-            try {
-                // Envia os dados para o backend via POST usando Axios
-                const response = await axios.post('https://apianjobom.victordev.shop/admin/criarPontoDeColeta', formCriarPontoColeta, {
+        // Envio dos dados ao backend
+        try {
+            const response = await axios.post(
+                'https://apianjobom.victordev.shop/admin/criarPontoDeColeta',
+                formCriarPontoColeta,
+                {
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: token
-
-                    }
-                });
-
-                // Exibe o SweetAlert para sucesso
-                Swal.fire({
-                    title: "Sucesso!",
-                    text: "O ponto de coleta foi criado!",
-                    icon: "success",
-                    timer: 1300,
-                    showConfirmButton: false
-
-                });
-                // Limpa o formulário após o envio
-                setFormCriarPontoColeta({
-                    name: '',
-                    urlMap: '',
-                    address: {
-                        cep: '',
-                        estado: '',
-                        cidade: '',
-                        bairro: '',
-                        rua: '',
-                        numero: '',
-
+                        Authorization: token,
                     },
-                    data_inicio: new Date().toISOString(),
-                    data_fim: new Date().toISOString(),
-                });
-
-            } catch (error) {
-                if (error.response && error.response.status === 409) {
-                    Swal.fire({
-                        title: "Temos um pequeno problema!",
-                        text: "O ponto de coleta já está cadastrado.",
-                        icon: "error",
-                        customClass: {
-                            confirmButton: 'swal2-confirm-custom'
-                        }
-
-                    });
-                } else {
-                    Swal.fire({
-                        title: "Erro",
-                        text: "Erro ao enviar dados para o servidor.",
-                        icon: "error",
-                        customClass: {
-                            confirmButton: 'swal2-confirm-custom'
-                        }
-
-                    });
                 }
+            );
+
+            // Exibe mensagem de sucesso
+            Swal.fire({
+                title: "Sucesso!",
+                text: "O ponto de coleta foi criado!",
+                icon: "success",
+                timer: 1300,
+                showConfirmButton: false,
+            });
+
+            // Reseta o formulário
+            setFormCriarPontoColeta({
+                name: '',
+                urlMap: '',
+                address: {
+                    cep: '',
+                    estado: '',
+                    cidade: '',
+                    bairro: '',
+                    rua: '',
+                    numero: '',
+                },
+                data_inicio: new Date().toISOString(),
+                data_fim: new Date().toISOString(),
+            });
+
+            // Redireciona para recarregar o formulário
+            navigate("/listaPontoColeta"); // Ajuste a rota para corresponder à do formulário
+
+        } catch (error) {
+            if (error.response && error.response.status === 409) {
+                Swal.fire({
+                    title: "Erro!",
+                    text: "O ponto de coleta já está cadastrado.",
+                    icon: "error",
+                });
+            } else {
+                Swal.fire({
+                    title: "Erro!",
+                    text: "Erro ao enviar dados para o servidor.",
+                    icon: "error",
+                });
             }
         }
+    };
 
-        // Atualiza os erros
-        setErros(newErros);
-    }
 
     return (
         <>
@@ -369,6 +340,7 @@ const CriarPontoColeta = () => {
                             name="name"
                             type="text"
                             maxLength={100}
+                            minLength={10}
                             value={formCriarPontoColeta.name}
                             onChange={handleChange}
                         />
@@ -380,6 +352,7 @@ const CriarPontoColeta = () => {
                             name="urlMap"
                             type="text"
                             maxLength={500}
+                            minLength={10}
                             value={formCriarPontoColeta.urlMap}
                             onChange={handleChange}
                         />
@@ -391,6 +364,7 @@ const CriarPontoColeta = () => {
                             name="address.cep"
                             type="text"
                             maxLength={9}
+                            minLength={9}
                             value={formCriarPontoColeta.address.cep}
                             onChange={handleChange}
                         />
@@ -403,6 +377,7 @@ const CriarPontoColeta = () => {
                                 name="address.estado"
                                 type="text"
                                 maxLength={2}
+                                minLength={2}
                                 value={formCriarPontoColeta.address.estado}
                                 onChange={handleChange}
                             />
@@ -414,6 +389,7 @@ const CriarPontoColeta = () => {
                                 name="address.cidade"
                                 type="text"
                                 maxLength={100}
+                                minLength={3}
                                 value={formCriarPontoColeta.address.cidade}
                                 onChange={handleChange}
                             />
@@ -425,6 +401,7 @@ const CriarPontoColeta = () => {
                                 name="address.bairro"
                                 type="text"
                                 maxLength={100}
+                                minLength={3}
                                 value={formCriarPontoColeta.address.bairro}
                                 onChange={handleChange}
                             />
@@ -438,6 +415,7 @@ const CriarPontoColeta = () => {
                                 name="address.rua"
                                 type="text"
                                 maxLength={100}
+                                minLength={3}
                                 value={formCriarPontoColeta.address.rua}
                                 onChange={handleChange}
                             />

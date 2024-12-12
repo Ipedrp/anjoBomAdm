@@ -77,30 +77,54 @@ tr:nth-child(even) td {
     background-color: #0e4d7a !important;
 }
 
-/* 
-alert */
-
-/* CustomSweetAlert.css */
 
 .swal2-title {
-    font-size: 1.5em; /* Tamanho da fonte do título */
-    color: #0056b3; /* Cor do título */
+    font-size: 1.5em;
+    color: #0056b3;
 }
 
-/* CustomSweetAlert.css */
+.form-container-criarEvento-edit {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 14px;
+    margin: 70px auto;
+    padding: 20px;
+    max-width: 600px;
+    width: 100%;
+    height: 1500px;
+    box-shadow: 1px 3px 15px 4px #c3c3ce;
+    background-color: #fff !important;
+}
 
 .evento-details p {
-    font-size: 1.1em; /* Tamanho da fonte do conteúdo */
-    color: #56616d; /* Cor do texto */
+    font-size: 1.1em;
+    color: #56616d;
     text-align: justify;
-    margin: 5px 0; /* Margem entre os parágrafos */
+    margin: 5px 0;
 }
 
-.evento-details span{
+.evento-details span {
     color: #0056b3;
     font-weight: 600;
 }
 
+.image-edit-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    max-height: calc(3 * 150px + 2 * 10px);
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+.image-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
 /* Estilo para versão mobile */
 @media (max-width: 768px) {

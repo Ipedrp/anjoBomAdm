@@ -45,6 +45,9 @@ function ListaPontoColeta() {
         urlMap: ''
     });
 
+    const [errorCep, setErrorCep] = useState(""); // Para o erro de CEP
+
+
 
     useEffect(() => {
         console.log("Executando fetchPontos na montagem do componente");
@@ -182,12 +185,16 @@ function ListaPontoColeta() {
                     const { cep, ...restErros } = prevErros;
                     return restErros;
                 });
+
+                setErrorCep('');
+
             } else {
                 // Atualiza o erro se o CEP for inválido
                 setErros((prevErros) => ({
                     ...prevErros,
                     cep: "CEP inválido, por favor verifique.",
                 }));
+                setErrorCep('CEP inválido');
             }
         } catch (error) {
             console.error("Erro ao buscar o CEP:", error);
@@ -233,97 +240,146 @@ function ListaPontoColeta() {
     const enviarEdicao = async () => {
         const { name, urlMap, address } = formCriarPontoColeta;
         const { cep, estado, cidade, bairro, rua, numero } = address;
+
         let encontrouErros = false;
         const novosErros = {};
-        const valid = false
 
-        // Validação dos campos
+        // Validação do Nome
         if (name.trim() === '') {
             novosErros.name = 'Nome do ponto de coleta é obrigatório';
+            encontrouErros = true;
+        } else if (name.length < 10) {
+            novosErros.name = 'Nome deve ter no mínimo 10 caracteres';
             encontrouErros = true;
         } else if (name.length > 99) {
             novosErros.name = 'Nome deve ter no máximo 100 caracteres';
             encontrouErros = true;
         }
+
+        // Validação da URL
+        if (urlMap.trim() === '') {
+            novosErros.urlMap = 'A URL do mapa é obrigatória';
+            encontrouErros = true;
+        } else if (urlMap.length < 10) {
+            novosErros.urlMap = 'A URL do mapa deve ter no mínimo 10 caracteres';
+            encontrouErros = true;
+        } else if (urlMap.length > 499) {
+            novosErros.urlMap = 'A URL do mapa deve ter no máximo 500 caracteres';
+            encontrouErros = true;
+        }
+
+        // Validação do CEP
         if (cep.trim() === '') {
             novosErros.cep = 'CEP é obrigatório';
             encontrouErros = true;
         } else if (cep.length < 9) {
             novosErros.cep = 'CEP inválido, deve conter 9 caracteres';
             encontrouErros = true;
+        } else if(errorCep){
+            novosErros.cep = 'CEP inválido!';
+            encontrouErros = true;
         }
+
+        // Validação do Estado
         if (estado.trim() === '') {
             novosErros.estado = 'O estado é obrigatório';
             encontrouErros = true;
+        } else if (estado.length !== 2) {
+            novosErros.estado = 'O estado deve ter 2 caracteres';
+            encontrouErros = true;
         }
+
+        // Validação da Cidade
         if (cidade.trim() === '') {
             novosErros.cidade = 'A cidade é obrigatória';
+            encontrouErros = true;
+        } else if (cidade.length < 3) {
+            novosErros.cidade = 'A cidade deve ter no mínimo 3 caracteres';
             encontrouErros = true;
         } else if (cidade.length > 99) {
             novosErros.cidade = 'A cidade deve ter no máximo 100 caracteres';
             encontrouErros = true;
         }
+
+        // Validação do Bairro
         if (bairro.trim() === '') {
             novosErros.bairro = 'O bairro é obrigatório';
+            encontrouErros = true;
+        } else if (bairro.length < 3) {
+            novosErros.bairro = 'O bairro deve ter no mínimo 3 caracteres';
             encontrouErros = true;
         } else if (bairro.length > 99) {
             novosErros.bairro = 'O bairro deve ter no máximo 100 caracteres';
             encontrouErros = true;
         }
+
+        // Validação da Rua
         if (rua.trim() === '') {
             novosErros.rua = 'A rua é obrigatória';
+            encontrouErros = true;
+        } else if (rua.length < 3) {
+            novosErros.rua = 'A rua deve ter no mínimo 3 caracteres';
             encontrouErros = true;
         } else if (rua.length > 99) {
             novosErros.rua = 'A rua deve ter no máximo 100 caracteres';
             encontrouErros = true;
         }
+
+        // Validação do Número
         if (numero.trim() === '') {
             novosErros.numero = 'O número é obrigatório';
             encontrouErros = true;
-        }
-        if (urlMap.trim() === '') {
-            novosErros.urlMap = 'A URL do mapa é obrigatória';
-            encontrouErros = true;
-        } else if (urlMap.length > 99) {
-            novosErros.urlMap = 'A URL do mapa deve ter no máximo 500 caracteres';
+        } else if (numero.length > 6) {
+            novosErros.numero = 'O número deve ter no máximo 6 caracteres';
             encontrouErros = true;
         }
 
-        // Verifica e valida o CEP antes de enviar
-        await validateCep(formCriarPontoColeta.address.cep);
+        // Atualiza os erros no estado
+        setErros(novosErros);
 
-        // Checa se o campo CEP possui erro
-        if (erros.cep) {
-            console.log("Erro ao atualizar: CEP inválido.");
-            return; // Interrompe o envio se o CEP for inválido
-        }
-
-        console.log("erros ecnontrados aqui: ", erros)
-
+        // Se houver erros, interrompe o envio
         if (encontrouErros) {
-            setErros(novosErros);
+            console.log("Erros encontrados:", novosErros);
             return;
         }
 
-        // Se não houver erros, continue com o envio
+        // Valida o CEP antes de enviar
+        await validateCep(formCriarPontoColeta.address.cep);
+        if (erros.cep) {
+            console.log("Erro ao validar o CEP:", erros.cep);
+            return; // Interrompe se o CEP ainda for inválido
+        }
+
+        // Envio para o backend
         try {
-            await axios.put(`https://apianjobom.victordev.shop/admin/atualizarPontoDeColeta/${pontoParaEditar.id}`, formCriarPontoColeta, {
-                headers: { Authorization: token }
-            });
+            await axios.put(
+                `https://apianjobom.victordev.shop/admin/atualizarPontoDeColeta/${pontoParaEditar.id}`,
+                formCriarPontoColeta,
+                {
+                    headers: { Authorization: token },
+                }
+            );
+
             Swal.fire({
                 icon: 'success',
                 title: 'Atualizado!',
                 text: 'O ponto de coleta foi atualizado.',
                 timer: 1300,
-                showConfirmButton: false
+                showConfirmButton: false,
             });
-            fetchPontos();
-            setEditando(false); // Volta para a tabela
+
+            fetchPontos(); // Recarrega a lista
+            setEditando(false); // Fecha o formulário de edição
         } catch (error) {
             console.error('Erro ao editar o ponto de coleta:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro!',
+                text: 'Não foi possível atualizar o ponto de coleta.',
+            });
         }
-
     };
+
 
     console.log("todos os pontos", pontos)
 
@@ -526,6 +582,7 @@ function ListaPontoColeta() {
                                     label={<label className="blue-label-criarPontoColeta">Nome do Ponto de Coleta</label>}
                                     value={formCriarPontoColeta.name}
                                     maxLength={100} // Limite máximo de 50 caracteres
+                                    minLenght={10}
                                     error={erros.name ? { content: erros.name } : undefined} // Exibe o erro se houver
                                     onChange={(e) => {
                                         const novoNome = e.target.value;
@@ -549,6 +606,7 @@ function ListaPontoColeta() {
                                     label={<label className="blue-label-criarPontoColeta">URL do Mapa</label>}
                                     value={formCriarPontoColeta.urlMap}
                                     maxLength={500}
+                                    minLenght={10}
                                     error={erros.urlMap ? { content: erros.urlMap } : undefined} // Exibe o erro se houver
                                     onChange={(e) => {
                                         const novaUrlMap = e.target.value;
@@ -574,6 +632,7 @@ function ListaPontoColeta() {
                                     fluid
                                     label={<label className="blue-label-criarPontoColeta">CEP</label>}
                                     maxLength={9} // Limita para 9 caracteres (99999-999)
+                                    minLenght={9}
                                     value={formCriarPontoColeta.address.cep}
                                     error={erros.cep ? { content: erros.cep } : undefined} // Exibe o erro se houver
                                     onChange={(e) => {
@@ -606,6 +665,7 @@ function ListaPontoColeta() {
                                         label={<label className="blue-label-criarPontoColeta">Estado</label>}
                                         value={formCriarPontoColeta.address.estado}
                                         maxLength={2}
+                                        minLenght={2}
                                         error={erros.estado ? { content: erros.estado } : undefined} // Exibe o erro se houver
                                         onChange={(e) => {
                                             const novoEstado = e.target.value.toUpperCase(); // Convertendo para maiúsculo
@@ -631,6 +691,7 @@ function ListaPontoColeta() {
                                         fluid
                                         label={<label className="blue-label-criarPontoColeta">Cidade</label>}
                                         maxLength={100}
+                                        minLenght={3}
                                         value={formCriarPontoColeta.address.cidade}
                                         error={erros.cidade ? { content: erros.cidade } : undefined} // Exibe o erro se houver
                                         onChange={(e) => {
@@ -657,6 +718,7 @@ function ListaPontoColeta() {
                                         fluid
                                         label={<label className="blue-label-criarPontoColeta">Bairro</label>}
                                         maxLength={100}
+                                        minLenght={3}
                                         value={formCriarPontoColeta.address.bairro}
                                         error={erros.bairro ? { content: erros.bairro } : undefined} // Exibe o erro se houver
                                         onChange={(e) => {
@@ -687,6 +749,7 @@ function ListaPontoColeta() {
                                         fluid
                                         label={<label className="blue-label-criarPontoColeta">Rua</label>}
                                         maxLength={100}
+                                        minLenght={3}
                                         value={formCriarPontoColeta.address.rua}
                                         error={erros.rua ? { content: erros.rua } : undefined} // Exibe o erro se houver
                                         onChange={(e) => {
@@ -714,6 +777,7 @@ function ListaPontoColeta() {
                                         label={<label className="blue-label-criarPontoColeta">Número</label>}
                                         value={formCriarPontoColeta.address.numero}
                                         maxLength={6}
+                                        minLenght={1}
                                         error={erros.numero ? { content: erros.numero } : undefined} // Exibe o erro se houver
                                         onChange={(e) => {
                                             const novoNumero = e.target.value;
