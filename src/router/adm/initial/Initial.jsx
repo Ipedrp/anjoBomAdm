@@ -118,7 +118,7 @@ function Initial() {
     const state3 = {
         options: {
             chart: {
-                type: "donut",
+                type: "pie",
             },
             labels: ['Alimentos', 'Bebidas', 'Brinquedos', 'Roupas', 'Medicamentos', 'Higiênicos'], // Nomes dos produtos
         },
@@ -144,7 +144,7 @@ function Initial() {
             
 
             <div style={{ display: "flex", justifyContent: "center", margin: "90px auto" }}>
-                <Chart options={state3.options} series={state3.series} type="donut" width="600" />
+                <Chart options={state3.options} series={state3.series} type="pie" width="500" />
             </div>
 
 

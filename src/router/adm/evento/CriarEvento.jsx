@@ -368,6 +368,11 @@ const CriarEvento = () => {
         console.log("tamnho de rua: ", rua.length)
         console.log("tamnho de bairro: ", bairro.length)
         console.log("ver erros: ", erros);
+
+        if(!valid){
+            window.scrollTo(0, 0);
+        }
+        
         if (valid) {
 
             const formData = new FormData();

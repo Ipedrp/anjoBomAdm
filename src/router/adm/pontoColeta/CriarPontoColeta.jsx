@@ -267,6 +267,7 @@ const CriarPontoColeta = () => {
         // Impede o envio se houver erros
         if (!valid) {
             console.log("Erros detectados: ", newErros);
+            window.scrollTo(0, 0);
             return;
         }
 
