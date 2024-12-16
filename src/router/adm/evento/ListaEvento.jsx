@@ -15,7 +15,7 @@ function ListaEvento() {
     useEffect(() => {
         window.scrollTo(0, 0); // Rola para o topo ao montar o componente
     }, []);
-    
+
     const [paginaAtual, setPaginaAtual] = useState(1);
     const itensPorPagina = 5;
     const [allEventos, setAllEventos] = useState([]);
@@ -39,7 +39,9 @@ function ListaEvento() {
 
     // Estado para armazenar os arquivos selecionados
     const [files, setFiles] = useState([]);
-    const [existingPhotos, setExistingPhotos] = useState(eventoParaEditar?.photosUrl || []); // Fotos já salvas
+    const [existingPhotos, setExistingPhotos] = useState(
+        (eventoParaEditar?.photosUrl || []).filter((url) => !!url) // Filtra URLs nulas ou inválidas
+    );
 
 
     const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
@@ -121,17 +123,31 @@ function ListaEvento() {
 
     const verMais = async (id) => {
         try {
+            console.log("Iniciando verMais com ID:", id);
+
             const response = await axios.get('https://apianjobom.victordev.shop/eventos/', {
                 headers: { Authorization: token },
             });
 
+            console.log("Resposta da API:", response.data);
+
             const evento = response.data.find((evento) => evento.id === id);
 
             if (evento) {
-                // Gerando as imagens como tags HTML
-                const imagensHtml = evento.photosUrl.map(
-                    (url) => `<img src="${url}" alt="Imagem do evento" style="width: 100%; max-width: 100px; margin: 10px 0; border-radius: 5px;">`
-                ).join('');
+                console.log("Evento encontrado:", evento);
+
+                // Gerando as imagens com tratamento para erros
+                const imagensHtml = evento.photosUrl
+                    .map(
+                        (url) =>
+                            `<img 
+                                src="${url}" 
+                                alt="Imagem do evento" 
+                                onerror="this.style.display='none';" 
+                                style="width: 100%; max-width: 100px; margin: 10px 0; border-radius: 5px;" 
+                            >`
+                    )
+                    .join('');
 
                 Swal.fire({
                     title: `${evento.titulo}`,
@@ -152,6 +168,7 @@ function ListaEvento() {
                     padding: '20px',
                 });
             } else {
+                console.log("Evento não encontrado.");
                 Swal.fire({
                     title: 'Evento não encontrado',
                     icon: 'error',
@@ -168,6 +185,8 @@ function ListaEvento() {
             });
         }
     };
+
+
 
     //Área de Edição    
 
@@ -257,10 +276,16 @@ function ListaEvento() {
     };
 
 
+    // const handleRemoverImagemExistente = (index) => {
+    //     const novasImagens = existingPhotos.filter((_, i) => i !== index); // Remove pelo índice
+    //     setExistingPhotos(novasImagens); // Atualiza o estado
+    //     console.log("Novo estado de existingPhotos:", novasImagens); // Verifique o novo estado
+    // };
+
     const handleRemoverImagemExistente = (index) => {
-        const novasImagens = existingPhotos.filter((_, i) => i !== index); // Remove pelo índice
-        setExistingPhotos(novasImagens); // Atualiza o estado
-        console.log("Novo estado de existingPhotos:", novasImagens); // Verifique o novo estado
+        const updatedPhotos = [...existingPhotos];
+        updatedPhotos.splice(index, 1); // Remove a imagem no índice correspondente
+        setExistingPhotos(updatedPhotos); // Atualiza o estado
     };
 
     const validarFormulario = async () => {
@@ -880,19 +905,57 @@ function ListaEvento() {
                                         {/* Renderizar imagens existentes */}
                                         {existingPhotos.map((url, index) => (
                                             <div key={`existing-${index}`} className="image-wrapper">
+                                                {/* <img
+                                                    src={url}
+                                                    alt={`Imagem existente ${index + 1}`}
+                                                    className="image-preview-thumbnail"
+                                                    style={{ width: '150px', height: '150px', objectFit: 'cover' }}
+                                                /> */}
+                                                {/* <img
+                                                    src={url}
+                                                    alt={`Imagem existente ${index + 1}`}
+                                                    className="image-preview-thumbnail"
+                                                    style={{ width: '150px', height: '150px', objectFit: 'cover' }}
+                                                    onError={(e) => (e.target.style.display = 'none')} // Oculta a imagem quebrada
+                                                /> */}
                                                 <img
                                                     src={url}
                                                     alt={`Imagem existente ${index + 1}`}
                                                     className="image-preview-thumbnail"
                                                     style={{ width: '150px', height: '150px', objectFit: 'cover' }}
+                                                    onError={() => {
+                                                        const updatedPhotos = existingPhotos.filter((_, i) => i !== index);
+                                                        setExistingPhotos(updatedPhotos); // Remove a imagem inválida do estado
+                                                    }}
                                                 />
-                                                <Button
+
+                                                {/* <Button
                                                     icon="trash"
                                                     color="red"
                                                     onClick={() => handleRemoverImagemExistente(index)}
                                                     size="small"
                                                     title="Remover imagem existente"
+                                                /> */}
+
+                                                <Button
+                                                    icon="trash"
+                                                    color="red"
+                                                    onClick={() => {
+                                                        if (existingPhotos.length === 1) {
+                                                            Swal.fire({
+                                                                title: "Ação não permitida",
+                                                                text: "O evento precisa ter pelo menos uma imagem.",
+                                                                icon: "warning",
+                                                                confirmButtonText: "Entendi",
+                                                            });
+                                                            return;
+                                                        }
+                                                        handleRemoverImagemExistente(index);
+                                                    }}
+                                                    size="small"
+                                                    title="Remover imagem existente"
                                                 />
+
                                             </div>
                                         ))}
                                     </div>
