@@ -13,9 +13,9 @@ const Footer = () => {
                         <Image src={logo} size='small' centered />
                     </Grid.Column>
                     <Grid.Column className="footer-text" width={8}>
-                        <p>Rua Juá, n° 264 - Bosque da Saúde - São Paulo - SP - Cep:04138-020</p>
+                        <p>Rua Juá, n° 264 - Bosque da Saúde - Feira de Santana - Ba - Cep: 04138-020</p>
                         <p>Informações sobre agendamento de doações: 4003 2299</p>
-                        <p>Informações sobre demais assuntos: (11) 5591 7074 (não atende aos fins de semana)</p>
+                        <p>Informações sobre demais assuntos: (75) 5591 7074 </p>
                         <p>2024 - Assistência e Promoção Social Anjo Bom</p>
                         <p>Política de Cookies | Política de Privacidade</p>
                     </Grid.Column>
