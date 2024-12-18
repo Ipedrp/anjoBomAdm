@@ -6,3 +6,42 @@
     font-weight: bold;
     text-align: center;
 }
+
+.container-before-grafic {
+    padding: 4rem;
+    margin: 7em 0px;
+}
+
+.chart-container {
+    display: flex;
+    flex-direction: column;
+    /* Muda a direção para coluna */
+    align-items: center;
+    /* Centraliza os itens */
+}
+
+.labels-container {
+    margin-top: 20px;
+    /* Espaçamento entre o gráfico e as labels */
+    text-align: center;
+    /* Centraliza as labels */
+}
+
+.label-item {
+    margin: 5px 0;
+    /* Espaçamento entre as labels */
+}
+
+@media (min-width: 600px) {
+    .chart-container {
+        flex-direction: row;
+        /* Layout horizontal em telas maiores */
+        justify-content: center;
+    }
+
+    .labels-container {
+        margin-top: 0;
+        margin-left: 20px;
+        /* Espaçamento ao lado do gráfico */
+    }
+}

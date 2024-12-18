@@ -121,15 +121,34 @@ function Initial() {
                 type: "pie",
             },
             labels: ['Alimentos', 'Bebidas', 'Brinquedos', 'Roupas', 'Medicamentos', 'Higiênicos'], // Nomes dos produtos
+            responsive: [
+                {
+                    breakpoint: 100, // Para tablets
+                    options: {
+                        chart: {
+                            width: 500, // Defina um tamanho menor
+                        },
+                    },
+                },
+                {
+                    breakpoint: 768, // Para dispositivos móveis
+                    options: {
+                        chart: {
+                            width: 400, // Tamanho ainda menor
+                        },
+                    },
+                },
+            ],
         },
         series: valores, // Quantidades dos produtos
     };
+    
 
     return (
         <>
             <NavbarAcoes />
             <Header title2={"Home"} />
-
+{/* 
             <div className="mixed-chart" style={{ display: "flex", justifyContent: "center", margin: "90px auto" }}>
                 <MediaQuery maxWidth={768}>
                     <Chart options={state.options} series={state.series} type="bar" width="100%" height="400" />
@@ -141,10 +160,12 @@ function Initial() {
 
            
             <h1 className="title-grafic">Doações</h1>
-            
+             */}
 
-            <div style={{ display: "flex", justifyContent: "center", margin: "90px auto" }}>
-                <Chart options={state3.options} series={state3.series} type="pie" width="500" />
+            <div className="container-before-grafic">
+                <div style={{ display: "flex", justifyContent: "center", margin: "90px auto" }}>
+                    <Chart options={state3.options} series={state3.series} type="pie" width={"700"}/>
+                </div>
             </div>
 
 

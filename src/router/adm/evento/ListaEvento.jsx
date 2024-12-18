@@ -80,6 +80,7 @@ function ListaEvento() {
         } catch (error) {
             console.error('Erro ao buscar os EVENTOS:', error);
         }
+
     };
 
 
@@ -451,6 +452,16 @@ function ListaEvento() {
     console.log("todos os evcento dessa buceta", allEventos)
     console.log("img aqui ", files)
 
+    // Função para truncar a descrição
+    const truncateText = (text, maxLength) => {
+        if (text.length > maxLength) {
+            return text.substring(0, maxLength) + '...';
+        }
+        return text;
+    };
+
+
+
     const indexUltimoItem = paginaAtual * itensPorPagina;
     const indexPrimeiroItem = indexUltimoItem - itensPorPagina;
     const eventosPaginaAtual = allEventos.slice(indexPrimeiroItem, indexUltimoItem);
@@ -568,7 +579,7 @@ function ListaEvento() {
                                 <Table.Body className="table-body-fixed">
                                     {eventosPaginaAtual.map((evento) => (
                                         <Table.Row key={evento.id}>
-                                            <Table.Cell>{evento.titulo}</Table.Cell>
+                                            <Table.Cell>{truncateText(evento.titulo, 26)}</Table.Cell>
                                             <Table.Cell>{evento.address.rua} - {evento.address.cidade} - {evento.address.estado}</Table.Cell>
                                             <Table.Cell>
                                                 {new Date(evento.data_inicio).toLocaleDateString('pt-BR')}
@@ -946,7 +957,8 @@ function ListaEvento() {
                                                                 title: "Ação não permitida",
                                                                 text: "O evento precisa ter pelo menos uma imagem.",
                                                                 icon: "warning",
-                                                                confirmButtonText: "Entendi",
+                                                                timer: 1300,
+                                                                showConfirmButton: false,
                                                             });
                                                             return;
                                                         }

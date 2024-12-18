@@ -50,7 +50,7 @@ function ListaDoacoesRetirar() {
             }
             Swal.fire({
                 title: 'Cesta atualizada com sucesso!',
-                icon: 'success',  // Corrigido para 'success' (não 'sucess')
+                icon: 'success', 
                 showConfirmButton: false,  // Remove o botão de confirmação
                 timer: 1500,  // (Opcional) Adiciona um timer de 1.5 segundos antes de fechar automaticamente
             });
@@ -66,12 +66,12 @@ function ListaDoacoesRetirar() {
     const confirmarAtualizacao = (id) => {
         Swal.fire({
             title: 'Tem certeza?',
-            text: "Você deseja atualizar esta cesta?",
+            text: "Essa cesta foi coletada?",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Sim, atualizar!',
+            confirmButtonText: 'Sim, coletada!',
             cancelButtonText: 'Cancelar',
         }).then((result) => {
             if (result.isConfirmed) {

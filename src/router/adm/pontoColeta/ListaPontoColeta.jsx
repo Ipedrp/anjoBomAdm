@@ -394,6 +394,13 @@ function ListaPontoColeta() {
 
     console.log("todos os pontos", pontos)
 
+     // Função para truncar a descrição
+     const truncateText = (text, maxLength) => {
+        if (text.length > maxLength) {
+            return text.substring(0, maxLength) + '...';
+        }
+        return text;
+    };
 
 
     const indexUltimoItem = paginaAtual * itensPorPagina;
@@ -498,7 +505,7 @@ function ListaPontoColeta() {
                                 <Table.Body className="table-body-fixed">
                                     {pontoColetaPaginaAtual.map((ponto) => (
                                         <Table.Row key={ponto.id}>
-                                            <Table.Cell>{ponto.name}</Table.Cell>
+                                            <Table.Cell>{truncateText(ponto.name, 30)}</Table.Cell>
                                             <Table.Cell>{ponto.address.cidade}</Table.Cell>
                                             <Table.Cell>
                                                 <Icon
