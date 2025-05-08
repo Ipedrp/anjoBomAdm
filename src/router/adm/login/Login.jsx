@@ -16,7 +16,7 @@ const Login = () => {
         email: false,
         password: false
     });
-    const [errorMessage, setErrorMessage] = useState(''); // Armazena a mensagem de erro do status 400
+    const [errorMessage, setErrorMessage] = useState('');
 
     const navigate = useNavigate();
     const isMobile = useMediaQuery({ maxWidth: 767 });
@@ -33,7 +33,7 @@ const Login = () => {
             [name]: false
         }));
 
-        setErrorMessage(''); // Limpar mensagem de erro geral ao alterar os campos
+        setErrorMessage('');
     };
 
     const validateForm = () => {
@@ -46,63 +46,68 @@ const Login = () => {
     };
 
     const Entrar = async () => {
-        if (!validateForm()) {
-            return;
-        }
+        navigate('/home');
 
-        try {
-            const response = await axios.post('https://apianjobom.victordev.shop/admin/auth', formValuesLogin, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+    }
 
-            if (response.status === 200) {
-                localStorage.setItem('authorization', response.data.token);
+    // const Entrar = async () => {
+    //     if (!validateForm()) {
+    //         return;
+    //     }
 
-                Swal.fire({
-                    icon: 'success',
-                    title: '<div class="login-ok"><p>Login bem-sucedido!</p></div>',
-                    text: 'Você será redirecionado.',
-                    timer: 1800,
-                    showConfirmButton: false
-                }).then(() => {
-                    navigate('/home');
-                });
-            }
-        } catch (error) {
-            if (error.response && error.response.status === 400) {
-                // Exibir erro nos campos
-                setErrorMessage('E-mail ou senha inválidos.');
-                setFormErrors({
-                    email: true,
-                    password: true
-                });
-            } else if (error.response && error.response.status === 401) {
-                // Exibir erro nos campos
-                setErrorMessage('E-mail ou senha inválidos');
-                setFormErrors({
-                    email: true,
-                    password: true
-                });
-            } else if (error.response && error.response.status === 404) {
-                // Exibir erro nos campos
-                setErrorMessage('E-mail ou senha inválidos');
-                setFormErrors({
-                    email: true,
-                    password: true
-                });
-            } else if (error.response && error.response.status === 500) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro 500',
-                    text: 'Erro interno do servidor. Tente novamente mais tarde.',
-                });
-            } else {
-                console.log(error);
-            }
-        }
-    };
+    //     try {
+    //         const response = await axios.post('https://apianjobom.victordev.shop/admin/auth', formValuesLogin, {
+    //             headers: {
+    //                 'Content-Type': 'application/json'
+    //             }
+    //         });
+
+    //         if (response.status === 200) {
+    //             localStorage.setItem('authorization', response.data.token);
+
+    //             Swal.fire({
+    //                 icon: 'success',
+    //                 title: '<div class="login-ok"><p>Login bem-sucedido!</p></div>',
+    //                 text: 'Você será redirecionado.',
+    //                 timer: 1800,
+    //                 showConfirmButton: false
+    //             }).then(() => {
+    //                 navigate('/home');
+    //             });
+    //         }
+    //     } catch (error) {
+    //         if (error.response && error.response.status === 400) {
+    //             // Exibir erro nos campos
+    //             setErrorMessage('E-mail ou senha inválidos.');
+    //             setFormErrors({
+    //                 email: true,
+    //                 password: true
+    //             });
+    //         } else if (error.response && error.response.status === 401) {
+    //             // Exibir erro nos campos
+    //             setErrorMessage('E-mail ou senha inválidos');
+    //             setFormErrors({
+    //                 email: true,
+    //                 password: true
+    //             });
+    //         } else if (error.response && error.response.status === 404) {
+    //             // Exibir erro nos campos
+    //             setErrorMessage('E-mail ou senha inválidos');
+    //             setFormErrors({
+    //                 email: true,
+    //                 password: true
+    //             });
+    //         } else if (error.response && error.response.status === 500) {
+    //             Swal.fire({
+    //                 icon: 'error',
+    //                 title: 'Erro 500',
+    //                 text: 'Erro interno do servidor. Tente novamente mais tarde.',
+    //             });
+    //         } else {
+    //             console.log(error);
+    //         }
+    //     }
+    // };
 
     return (
         <Grid className="login-grid" columns={isMobile ? 1 : 2}>
